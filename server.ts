@@ -114,6 +114,12 @@ async function readSettings() {
       camatTitle: "Camat Gunung Timang",
       camatGreeting: "Selamat datang di Portal Pendaftaran Resmi Lomba HUT Kemerdekaan RI Ke-81 Tingkat Kecamatan Gunung Timang. Melalui wadah digital ini, mari kita pupuk semangat perjuangan, sportivitas, serta kreativitas anak-anak bangsa se-Kecamatan Gunung Timang. Mari rayakan kemerdekaan dengan prestasi gemilang!",
       camatPhoto: "",
+      contacts: [
+        { seksi: "Seksi Tari dan Karaoke", nama: "Martan Sitaboyan", phone: "0813-4633-6706" },
+        { seksi: "Seksi Tari dan Karaoke", nama: "Amaludin", phone: "0852-5287-8332" },
+        { seksi: "Seksi Tari dan Karaoke", nama: "Tamara Dewi", phone: "0812-5090-5768" },
+        { seksi: "Seksi Paduan Suara dan Vocal Solo", nama: "Irma Iriani", phone: "0813-8438-6468" }
+      ],
       ...parsed
     };
   } catch (error) {
@@ -131,7 +137,13 @@ async function readSettings() {
       camatName: "Haryadi, S.IP",
       camatTitle: "Camat Gunung Timang",
       camatGreeting: "Selamat datang di Portal Pendaftaran Resmi Lomba HUT Kemerdekaan RI Ke-81 Tingkat Kecamatan Gunung Timang. Melalui wadah digital ini, mari kita pupuk semangat perjuangan, sportivitas, serta kreativitas anak-anak bangsa se-Kecamatan Gunung Timang. Mari rayakan kemerdekaan dengan prestasi gemilang!",
-      camatPhoto: ""
+      camatPhoto: "",
+      contacts: [
+        { seksi: "Seksi Tari dan Karaoke", nama: "Martan Sitaboyan", phone: "0813-4633-6706" },
+        { seksi: "Seksi Tari dan Karaoke", nama: "Amaludin", phone: "0852-5287-8332" },
+        { seksi: "Seksi Tari dan Karaoke", nama: "Tamara Dewi", phone: "0812-5090-5768" },
+        { seksi: "Seksi Paduan Suara dan Vocal Solo", nama: "Irma Iriani", phone: "0813-8438-6468" }
+      ]
     };
   }
 }

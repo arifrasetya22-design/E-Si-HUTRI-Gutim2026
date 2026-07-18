@@ -661,7 +661,7 @@ export default function App() {
 
             {/* 4. CONTACTS TAB */}
             {activeTab === "narahubung" && (
-              <NarahubungView />
+              <NarahubungView contacts={settings.contacts} />
             )}
 
             {/* 5. ADMIN TAB */}

@@ -8,6 +8,7 @@ import {
   Building2, User, Upload, ArrowRight, RotateCcw, Eye, Sparkles, CheckSquare, 
   FileText, ShieldCheck, Printer, Download, MessageSquare, AlertCircle, Loader2, HelpCircle 
 } from "lucide-react";
+import { motion } from "motion/react";
 import { Barcode, QRCode } from "./CustomVisuals";
 import { SchoolData, ParticipantData, UploadedDocs, Registration } from "../types";
 
@@ -258,7 +259,12 @@ export const FormulirPendaftaran: React.FC<{
     const waLink = `https://wa.me/62${waPhone.substring(1)}?text=${waText}`;
 
     return (
-      <div className="max-w-2xl mx-auto space-y-6 animate-fade-in print:p-0">
+      <motion.div
+        initial={{ opacity: 0, y: 15 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.45, ease: "easeOut" }}
+        className="max-w-2xl mx-auto space-y-6 print:p-0"
+      >
         <div className="bg-white border border-slate-200 rounded-3xl p-6 relative overflow-hidden text-center shadow-sm print:border-none print:bg-white print:text-slate-900">
           {/* Confetti element */}
           <div className="absolute inset-0 bg-radial-gradient from-red-600/5 to-transparent pointer-events-none" />
@@ -367,14 +373,19 @@ export const FormulirPendaftaran: React.FC<{
             </button>
           </div>
         </div>
-      </div>
+      </motion.div>
     );
   }
 
   // Active Preview Mode Card Toggle
   if (isPreview) {
     return (
-      <div className="max-w-2xl mx-auto space-y-6 animate-fade-in">
+      <motion.div
+        initial={{ opacity: 0, y: 15 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.45, ease: "easeOut" }}
+        className="max-w-2xl mx-auto space-y-6"
+      >
         <div className="p-6 bg-white border border-slate-200 rounded-3xl relative shadow-sm text-left">
           <h2 className="text-lg font-bold text-slate-900 flex items-center gap-2 mb-4 border-b border-slate-100 pb-3">
             <Eye className="w-5 h-5 text-red-500" /> Pratinjau Lembar Pendaftaran
@@ -476,12 +487,18 @@ export const FormulirPendaftaran: React.FC<{
             </button>
           </div>
         </div>
-      </div>
+      </motion.div>
     );
   }
 
   return (
-    <form onSubmit={handleSubmit} className="max-w-3xl mx-auto space-y-6 animate-fade-in">
+    <motion.form
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.4 }}
+      onSubmit={handleSubmit}
+      className="max-w-3xl mx-auto space-y-6"
+    >
       
       {/* OCR scanner float-panel */}
       <div className="p-4 bg-gradient-to-r from-red-50 via-amber-50 to-white border border-red-100 rounded-3xl flex flex-col sm:flex-row items-center justify-between gap-4 shadow-xs">
@@ -966,6 +983,6 @@ export const FormulirPendaftaran: React.FC<{
         </div>
       </div>
 
-    </form>
+    </motion.form>
   );
 };

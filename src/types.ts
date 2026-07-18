@@ -92,4 +92,5 @@ export interface HomepageSettings {
   camatTitle?: string;
   camatGreeting?: string;
   camatPhoto?: string;
+  contacts?: ContactItem[];
 }

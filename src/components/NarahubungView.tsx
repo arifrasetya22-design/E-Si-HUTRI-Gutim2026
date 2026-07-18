@@ -5,49 +5,64 @@
 
 import React from "react";
 import { Phone, MessageSquare, ShieldCheck, UserCheck } from "lucide-react";
+import { ContactItem } from "../types";
 
-interface Contact {
-  nama: string;
-  phone: string;
-  seksi: string;
-  avatarInitials: string;
+interface NarahubungViewProps {
+  contacts?: ContactItem[];
 }
 
-export const NarahubungView: React.FC = () => {
-  const seksiTari: Contact[] = [
+export const NarahubungView: React.FC<NarahubungViewProps> = ({ contacts }) => {
+  // Fallback to hardcoded list if settings.contacts is empty or undefined
+  const defaultContacts: ContactItem[] = [
     {
       nama: "Martan Sitaboyan",
       phone: "0813-4633-6706",
       seksi: "Seksi Tari dan Karaoke",
-      avatarInitials: "MS",
     },
     {
       nama: "Amaludin",
       phone: "0852-5287-8332",
       seksi: "Seksi Tari dan Karaoke",
-      avatarInitials: "AM",
     },
     {
       nama: "Tamara Dewi",
       phone: "0812-5090-5768",
       seksi: "Seksi Tari dan Karaoke",
-      avatarInitials: "TD",
     },
-  ];
-
-  const seksiPaduanSuara: Contact[] = [
     {
       nama: "Irma Iriani",
       phone: "0813-8438-6468",
       seksi: "Seksi Paduan Suara dan Vocal Solo",
-      avatarInitials: "II",
-    },
+    }
   ];
 
-  const renderContactCard = (c: Contact, idx: number) => {
+  const listToUse = contacts && contacts.length > 0 ? contacts : defaultContacts;
+
+  // Let's group the contacts by seksi (Category)
+  const initialGroups: Record<string, ContactItem[]> = {};
+  const groupedContacts = listToUse.reduce((groups, item) => {
+    const seksiName = item.seksi || "Seksi Lainnya";
+    if (!groups[seksiName]) {
+      groups[seksiName] = [];
+    }
+    groups[seksiName].push(item);
+    return groups;
+  }, initialGroups);
+
+  const getInitials = (name: string) => {
+    if (!name) return "P";
+    const parts = name.trim().split(/\s+/);
+    if (parts.length >= 2) {
+      return (parts[0][0] + parts[1][0]).toUpperCase();
+    }
+    return parts[0].substring(0, 2).toUpperCase();
+  };
+
+  const renderContactCard = (c: ContactItem, idx: number) => {
     const cleanPhone = c.phone.replace(/[^0-9]/g, "");
-    const waLink = `https://wa.me/62${cleanPhone.substring(1)}`; // convert 08xx to 628xx format
+    const waLink = `https://wa.me/62${cleanPhone.startsWith("0") ? cleanPhone.substring(1) : cleanPhone}`; // convert 08xx to 628xx format
     const telLink = `tel:${c.phone}`;
+    const initials = getInitials(c.nama);
 
     return (
       <div
@@ -59,13 +74,13 @@ export const NarahubungView: React.FC = () => {
 
         <div className="flex gap-4 items-center mb-4">
           {/* Avatar sphere */}
-          <div className="w-12 h-12 rounded-full bg-gradient-to-tr from-red-600 to-amber-500 flex items-center justify-center font-bold text-white text-sm border-2 border-white shadow-sm">
-            {c.avatarInitials}
+          <div className="w-12 h-12 rounded-full bg-gradient-to-tr from-red-600 to-amber-500 flex items-center justify-center font-bold text-white text-sm border-2 border-white shadow-sm shrink-0">
+            {initials}
           </div>
           <div>
             <h4 className="font-bold text-slate-900 text-sm leading-tight">{c.nama}</h4>
-            <p className="text-xxs text-slate-500 mt-1 uppercase tracking-wider font-semibold text-amber-700 flex items-center gap-1">
-              <UserCheck className="w-3 h-3 text-red-600" /> {c.seksi}
+            <p className="text-[10px] text-slate-500 mt-1 uppercase tracking-wider font-semibold text-amber-700 flex items-center gap-1">
+              <UserCheck className="w-3.5 h-3.5 text-red-600 shrink-0" /> {c.seksi}
             </p>
           </div>
         </div>
@@ -102,28 +117,18 @@ export const NarahubungView: React.FC = () => {
   };
 
   return (
-    <div className="space-y-8">
-      {/* Seksi Tari */}
-      <div className="space-y-4">
-        <div className="flex items-center gap-2 border-b border-slate-100 pb-2">
-          <div className="w-1 h-6 bg-red-600 rounded-full" />
-          <h3 className="font-bold text-slate-900 text-base">Seksi Tari dan Karaoke</h3>
+    <div className="space-y-8 animate-fade-in">
+      {(Object.entries(groupedContacts) as [string, ContactItem[]][]).map(([seksiName, list], grpIdx) => (
+        <div key={grpIdx} className="space-y-4 text-left">
+          <div className="flex items-center gap-2 border-b border-slate-100 pb-2">
+            <div className="w-1 h-6 bg-red-600 rounded-full" />
+            <h3 className="font-bold text-slate-900 text-base">{seksiName}</h3>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+            {list.map((c, i) => renderContactCard(c, i))}
+          </div>
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-          {seksiTari.map((c, i) => renderContactCard(c, i))}
-        </div>
-      </div>
-
-      {/* Seksi Paduan Suara */}
-      <div className="space-y-4">
-        <div className="flex items-center gap-2 border-b border-slate-100 pb-2">
-          <div className="w-1 h-6 bg-red-600 rounded-full" />
-          <h3 className="font-bold text-slate-900 text-base">Seksi Paduan Suara dan Vocal Solo</h3>
-        </div>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-          {seksiPaduanSuara.map((c, i) => renderContactCard(c, i))}
-        </div>
-      </div>
+      ))}
 
       {/* Info notice */}
       <div className="p-4 bg-slate-50 border border-slate-200 rounded-3xl flex gap-3.5 items-start text-left shadow-xs">

@@ -8,10 +8,11 @@ import {
   Lock, KeyRound, ShieldAlert, CheckCircle2, XCircle, Search, Filter, Trash2, 
   Printer, Download, MessageSquare, RefreshCw, BarChart3, Database, Sparkles, 
   ChevronRight, ClipboardList, LogOut, Check, Loader2, Award, HelpCircle,
-  Image as ImageIcon, Camera, Plus, Trash, Settings, Upload, Pencil
+  Image as ImageIcon, Camera, Plus, Trash, Settings, Upload, Pencil, PhoneCall
 } from "lucide-react";
+import { motion, AnimatePresence } from "motion/react";
 import { Barcode, QRCode } from "./CustomVisuals";
-import { Registration, DashboardStats, HomepageSettings } from "../types";
+import { Registration, DashboardStats, HomepageSettings, ContactItem } from "../types";
 
 export const AdminDashboard: React.FC<{ 
   stats: DashboardStats; 
@@ -105,6 +106,13 @@ export const AdminDashboard: React.FC<{
   const [newGalleryDesc, setNewGalleryDesc] = useState("");
   const [newGalleryImgUrl, setNewGalleryImgUrl] = useState("");
 
+  // Contact list state & form states
+  const [contacts, setContacts] = useState<ContactItem[]>(settings.contacts || []);
+  const [editingContactIndex, setEditingContactIndex] = useState<number | null>(null);
+  const [contactSeksi, setContactSeksi] = useState("");
+  const [contactNama, setContactNama] = useState("");
+  const [contactPhone, setContactPhone] = useState("");
+
   const [isSavingSettings, setIsSavingSettings] = useState(false);
 
   // Sync state if settings prop changes
@@ -119,6 +127,7 @@ export const AdminDashboard: React.FC<{
     setCamatTitle(settings.camatTitle || "Camat Gunung Timang");
     setCamatGreeting(settings.camatGreeting || "");
     setCamatPhoto(settings.camatPhoto || "");
+    setContacts(settings.contacts || []);
   }, [settings]);
 
   // Logo file uploader helper
@@ -128,9 +137,9 @@ export const AdminDashboard: React.FC<{
     const reader = new FileReader();
     reader.onload = async (event) => {
       if (event.target?.result) {
-        const compressed = await compressImage(event.target.result as string, 500, 500, 0.7);
+        const compressed = await compressImage(event.target.result as string, 180, 180, 0.5);
         setLogo(compressed);
-        showToast("Logo berhasil diunggah & dikompres!", "success");
+        showToast("Logo berhasil diunggah & dikompres secara optimal!", "success");
       }
     };
     reader.readAsDataURL(file);
@@ -143,9 +152,9 @@ export const AdminDashboard: React.FC<{
     const reader = new FileReader();
     reader.onload = async (event) => {
       if (event.target?.result) {
-        const compressed = await compressImage(event.target.result as string, 400, 500, 0.7);
+        const compressed = await compressImage(event.target.result as string, 300, 400, 0.5);
         setCamatPhoto(compressed);
-        showToast("Foto Camat berhasil diunggah & dikompres!", "success");
+        showToast("Foto Camat berhasil diunggah & dikompres secara optimal!", "success");
       }
     };
     reader.readAsDataURL(file);
@@ -158,9 +167,9 @@ export const AdminDashboard: React.FC<{
     const reader = new FileReader();
     reader.onload = async (event) => {
       if (event.target?.result) {
-        const compressed = await compressImage(event.target.result as string, 800, 600, 0.7);
+        const compressed = await compressImage(event.target.result as string, 500, 375, 0.5);
         setNewGalleryImgUrl(compressed);
-        showToast("Foto dokumentasi berhasil diunggah & dikompres!", "success");
+        showToast("Foto dokumentasi berhasil diunggah & dikompres secara optimal!", "success");
       }
     };
     reader.readAsDataURL(file);
@@ -180,6 +189,7 @@ export const AdminDashboard: React.FC<{
         camatTitle,
         camatGreeting,
         camatPhoto,
+        contacts,
         ...updatedFields
       };
       const response = await fetch("/api/settings", {
@@ -218,7 +228,8 @@ export const AdminDashboard: React.FC<{
           camatName,
           camatTitle,
           camatGreeting,
-          camatPhoto
+          camatPhoto,
+          contacts
         })
       });
       const result = await response.json();
@@ -329,6 +340,13 @@ export const AdminDashboard: React.FC<{
       fetchRegistrations();
     }
   }, [isAuthenticated]);
+
+  // Generate new captcha and dynamic OTP on mount
+  useEffect(() => {
+    resetCaptcha();
+    const initialOtp = String(Math.floor(100000 + Math.random() * 900000));
+    setExpectedOtp(initialOtp);
+  }, []);
 
   // Generate new captcha
   const resetCaptcha = () => {
@@ -622,7 +640,7 @@ export const AdminDashboard: React.FC<{
                   onClick={() => {
                     const genOtp = String(Math.floor(100000 + Math.random() * 900000));
                     setExpectedOtp(genOtp);
-                    alert(`🔑 [Kirim Ulang OTP]: ${genOtp}`);
+                    showToast(`🔑 [Kirim Ulang OTP]: Kode OTP baru Anda adalah: ${genOtp}`, "info");
                   }}
                   className="text-red-600 hover:text-red-700 font-bold cursor-pointer"
                 >
@@ -1288,6 +1306,148 @@ export const AdminDashboard: React.FC<{
                 </div>
               </div>
 
+              {/* 5. Kelola Narahubung */}
+              <div className="space-y-4 bg-slate-50/50 p-4 border border-slate-150 rounded-2xl">
+                <div className="flex items-center gap-2 border-b border-slate-100 pb-2">
+                  <div className="p-1 bg-red-100 text-red-600 rounded-lg">
+                    <PhoneCall className="w-4 h-4" />
+                  </div>
+                  <label className="text-xxs uppercase tracking-wider text-slate-500 font-bold block">5. Daftar Narahubung Kegiatan</label>
+                </div>
+
+                {/* List contacts */}
+                <div className="space-y-2">
+                  {contacts && contacts.length > 0 ? (
+                    contacts.map((c, idx) => (
+                      <div key={idx} className="flex items-center justify-between p-2.5 bg-white border border-slate-200 rounded-xl text-xxs">
+                        <div className="text-left">
+                          <span className="font-bold text-slate-900">{c.nama}</span>{" "}
+                          <span className="text-slate-500 font-mono font-semibold">({c.phone})</span>
+                          <p className="text-[10px] text-amber-700 font-extrabold uppercase tracking-wider mt-0.5">{c.seksi}</p>
+                        </div>
+                        <div className="flex gap-1">
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setContactSeksi(c.seksi);
+                              setContactNama(c.nama);
+                              setContactPhone(c.phone);
+                              setEditingContactIndex(idx);
+                            }}
+                            className="p-1.5 hover:bg-slate-100 text-slate-600 hover:text-slate-900 rounded-lg cursor-pointer transition-colors"
+                            title="Edit"
+                          >
+                            <Pencil className="w-3.5 h-3.5" />
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              const updated = contacts.filter((_, i) => i !== idx);
+                              setContacts(updated);
+                              showToast("Narahubung dihapus! Klik simpan untuk menjadikannya permanen.", "info");
+                            }}
+                            className="p-1.5 hover:bg-red-50 text-red-500 hover:text-red-700 rounded-lg cursor-pointer transition-colors"
+                            title="Hapus"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
+                      </div>
+                    ))
+                  ) : (
+                    <p className="text-xxs text-slate-400 italic font-semibold">Belum ada daftar narahubung kegiatan.</p>
+                  )}
+                </div>
+
+                {/* Form to add/edit contact */}
+                <div className="p-3.5 bg-white border border-slate-200 rounded-xl space-y-3">
+                  <div className="flex justify-between items-center pb-1 border-b border-slate-100">
+                    <span className="text-[10px] font-extrabold text-slate-600 uppercase tracking-wider">
+                      {editingContactIndex !== null ? "📝 EDIT NARAHUBUNG" : "✨ TAMBAH NARAHUBUNG BARU"}
+                    </span>
+                    {editingContactIndex !== null && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setEditingContactIndex(null);
+                          setContactSeksi("");
+                          setContactNama("");
+                          setContactPhone("");
+                        }}
+                        className="text-[10px] text-red-600 hover:underline font-bold"
+                      >
+                        Batal
+                      </button>
+                    )}
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                    <div className="space-y-1">
+                      <label className="text-[9px] font-bold text-slate-400 uppercase tracking-wider">Seksi / Kategori</label>
+                      <input
+                        type="text"
+                        value={contactSeksi}
+                        onChange={(e) => setContactSeksi(e.target.value)}
+                        placeholder="Contoh: Seksi Tari"
+                        className="w-full bg-slate-50 border border-slate-200 focus:outline-hidden text-xxs rounded-xl p-2.5 text-slate-800 font-semibold"
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <label className="text-[9px] font-bold text-slate-400 uppercase tracking-wider">Nama Lengkap</label>
+                      <input
+                        type="text"
+                        value={contactNama}
+                        onChange={(e) => setContactNama(e.target.value)}
+                        placeholder="Contoh: Ahmad"
+                        className="w-full bg-slate-50 border border-slate-200 focus:outline-hidden text-xxs rounded-xl p-2.5 text-slate-800 font-semibold"
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <label className="text-[9px] font-bold text-slate-400 uppercase tracking-wider">Nomor HP / WhatsApp</label>
+                      <input
+                        type="text"
+                        value={contactPhone}
+                        onChange={(e) => setContactPhone(e.target.value)}
+                        placeholder="Contoh: 0812-3456-7890"
+                        className="w-full bg-slate-50 border border-slate-200 focus:outline-hidden text-xxs rounded-xl p-2.5 text-slate-800 font-mono font-semibold"
+                      />
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (!contactNama.trim() || !contactPhone.trim() || !contactSeksi.trim()) {
+                        showToast("Semua kolom narahubung wajib diisi!", "warning");
+                        return;
+                      }
+                      if (editingContactIndex !== null) {
+                        const updated = [...contacts];
+                        updated[editingContactIndex] = {
+                          nama: contactNama.trim(),
+                          phone: contactPhone.trim(),
+                          seksi: contactSeksi.trim()
+                        };
+                        setContacts(updated);
+                        setEditingContactIndex(null);
+                        showToast("Narahubung berhasil diubah! Klik 'Simpan Seluruh Pengaturan' di bawah.", "success");
+                      } else {
+                        setContacts([...contacts, {
+                          nama: contactNama.trim(),
+                          phone: contactPhone.trim(),
+                          seksi: contactSeksi.trim()
+                        }]);
+                        showToast("Narahubung berhasil masuk daftar! Klik 'Simpan Seluruh Pengaturan' di bawah.", "success");
+                      }
+                      setContactSeksi("");
+                      setContactNama("");
+                      setContactPhone("");
+                    }}
+                    className="w-full py-2 bg-slate-950 hover:bg-slate-900 text-white font-bold text-[10px] rounded-xl uppercase tracking-wider transition-colors cursor-pointer"
+                  >
+                    {editingContactIndex !== null ? "Terapkan Perubahan" : "Tambahkan ke Daftar"}
+                  </button>
+                </div>
+              </div>
+
               {/* Submit Buttons */}
               <div className="pt-4 border-t border-slate-100 flex justify-end">
                 <button
@@ -1353,101 +1513,114 @@ export const AdminDashboard: React.FC<{
       )}
 
       {/* ----------------- MODAL VERIFIKASI / DETAIL BERKAS ----------------- */}
-      {selectedReg && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4 z-50 overflow-y-auto print:hidden">
-          <div className="bg-white border border-slate-200 rounded-3xl w-full max-w-2xl overflow-hidden shadow-xl animate-scale-up max-h-[90vh] flex flex-col text-left">
-            
-            {/* Modal Header */}
-            <div className="p-4 bg-slate-50 border-b border-slate-150 flex justify-between items-center">
-              <div>
-                <span className="text-xxs uppercase tracking-widest text-red-600 font-bold">Verifikasi Lembar Berkas</span>
-                <h3 className="font-bold text-slate-900 text-sm mt-0.5">{selectedReg.id} - {selectedReg.dataPeserta?.namaPeserta}</h3>
-              </div>
-              <button
-                onClick={() => setSelectedReg(null)}
-                className="text-slate-400 hover:text-slate-700 p-1.5 hover:bg-slate-100 rounded-lg transition-colors cursor-pointer"
-              >
-                <XCircle className="w-5 h-5" />
-              </button>
-            </div>
-
-            {/* Modal Scroll Body */}
-            <div className="p-6 space-y-6 overflow-y-auto flex-1">
+      <AnimatePresence>
+        {selectedReg && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4 z-50 overflow-y-auto print:hidden"
+          >
+            <motion.div
+              initial={{ scale: 0.95, y: 20 }}
+              animate={{ scale: 1, y: 0 }}
+              exit={{ scale: 0.95, y: 20 }}
+              transition={{ type: "spring", damping: 25, stiffness: 350 }}
+              className="bg-white border border-slate-200 rounded-3xl w-full max-w-2xl overflow-hidden shadow-xl max-h-[90vh] flex flex-col text-left"
+            >
               
-              {/* Info Columns */}
-              <div className="grid grid-cols-2 gap-4 text-xs">
-                <div className="p-3 bg-slate-50 border border-slate-100 rounded-2xl space-y-1">
-                  <span className="text-slate-500 text-xxs uppercase tracking-wider font-bold">A. Data Sekolah</span>
-                  <p className="text-slate-900 font-bold">{selectedReg.dataSekolah?.namaSekolah}</p>
-                  <p className="text-slate-700">Jenjang: {selectedReg.dataSekolah?.jenjang}</p>
-                  <p className="text-slate-700">Pembina: {selectedReg.dataSekolah?.namaPembina}</p>
-                  <p className="text-slate-700 font-mono">HP: {selectedReg.dataSekolah?.nomorHP}</p>
+              {/* Modal Header */}
+              <div className="p-4 bg-slate-50 border-b border-slate-150 flex justify-between items-center">
+                <div>
+                  <span className="text-xxs uppercase tracking-widest text-red-600 font-bold">Verifikasi Lembar Berkas</span>
+                  <h3 className="font-bold text-slate-900 text-sm mt-0.5">{selectedReg.id} - {selectedReg.dataPeserta?.namaPeserta}</h3>
                 </div>
-
-                <div className="p-3 bg-slate-50 border border-slate-100 rounded-2xl space-y-1">
-                  <span className="text-slate-500 text-xxs uppercase tracking-wider font-bold">B. Data Peserta</span>
-                  <p className="text-slate-900 font-bold">{selectedReg.dataPeserta?.namaPeserta}</p>
-                  <p className="text-slate-700 font-mono">NISN: {selectedReg.dataPeserta?.nisn}</p>
-                  <p className="text-slate-700">Desa: {selectedReg.dataPeserta?.desa}</p>
-                  <p className="text-slate-700">Tgl Lahir: {selectedReg.dataPeserta?.tanggalLahir}</p>
-                </div>
+                <button
+                  onClick={() => setSelectedReg(null)}
+                  className="text-slate-400 hover:text-slate-700 p-1.5 hover:bg-slate-100 rounded-lg transition-colors cursor-pointer"
+                >
+                  <XCircle className="w-5 h-5" />
+                </button>
               </div>
 
-              {/* Lomba & File List */}
-              <div className="space-y-2">
-                <span className="text-slate-500 text-xxs uppercase tracking-wider font-bold block">C. Cabang Lomba & Berkas Fisik</span>
-                <div className="p-4 bg-slate-50 border border-slate-150 rounded-2xl flex items-center justify-between">
-                  <span className="text-red-700 font-bold text-sm">{selectedReg.cabangLomba}</span>
-                  <div className="flex gap-1.5">
-                    {selectedReg.uploads?.partitur === "Ada" && <span className="px-2.5 py-1 bg-red-100 border border-red-200 rounded-md text-red-700 text-xxs font-semibold">Partitur</span>}
-                    {selectedReg.uploads?.lirik === "Ada" && <span className="px-2.5 py-1 bg-red-100 border border-red-200 rounded-md text-red-700 text-xxs font-semibold">Lirik</span>}
-                    {selectedReg.uploads?.suratTugas === "Ada" && <span className="px-2.5 py-1 bg-red-100 border border-red-200 rounded-md text-red-700 text-xxs font-semibold">Surat Tugas</span>}
-                    {selectedReg.uploads?.pasFoto === "Ada" && <span className="px-2.5 py-1 bg-red-100 border border-red-200 rounded-md text-red-700 text-xxs font-semibold">Pas Foto</span>}
+              {/* Modal Scroll Body */}
+              <div className="p-6 space-y-6 overflow-y-auto flex-1">
+                
+                {/* Info Columns */}
+                <div className="grid grid-cols-2 gap-4 text-xs">
+                  <div className="p-3 bg-slate-50 border border-slate-100 rounded-2xl space-y-1">
+                    <span className="text-slate-500 text-xxs uppercase tracking-wider font-bold">A. Data Sekolah</span>
+                    <p className="text-slate-900 font-bold">{selectedReg.dataSekolah?.namaSekolah}</p>
+                    <p className="text-slate-700">Jenjang: {selectedReg.dataSekolah?.jenjang}</p>
+                    <p className="text-slate-700">Pembina: {selectedReg.dataSekolah?.namaPembina}</p>
+                    <p className="text-slate-700 font-mono">HP: {selectedReg.dataSekolah?.nomorHP}</p>
+                  </div>
+
+                  <div className="p-3 bg-slate-50 border border-slate-100 rounded-2xl space-y-1">
+                    <span className="text-slate-500 text-xxs uppercase tracking-wider font-bold">B. Data Peserta</span>
+                    <p className="text-slate-900 font-bold">{selectedReg.dataPeserta?.namaPeserta}</p>
+                    <p className="text-slate-700 font-mono">NISN: {selectedReg.dataPeserta?.nisn}</p>
+                    <p className="text-slate-700">Desa: {selectedReg.dataPeserta?.desa}</p>
+                    <p className="text-slate-700">Tgl Lahir: {selectedReg.dataPeserta?.tanggalLahir}</p>
                   </div>
                 </div>
+
+                {/* Lomba & File List */}
+                <div className="space-y-2">
+                  <span className="text-slate-500 text-xxs uppercase tracking-wider font-bold block">C. Cabang Lomba & Berkas Fisik</span>
+                  <div className="p-4 bg-slate-50 border border-slate-150 rounded-2xl flex items-center justify-between">
+                    <span className="text-red-700 font-bold text-sm">{selectedReg.cabangLomba}</span>
+                    <div className="flex gap-1.5">
+                      {selectedReg.uploads?.partitur === "Ada" && <span className="px-2.5 py-1 bg-red-100 border border-red-200 rounded-md text-red-700 text-xxs font-semibold">Partitur</span>}
+                      {selectedReg.uploads?.lirik === "Ada" && <span className="px-2.5 py-1 bg-red-100 border border-red-200 rounded-md text-red-700 text-xxs font-semibold">Lirik</span>}
+                      {selectedReg.uploads?.suratTugas === "Ada" && <span className="px-2.5 py-1 bg-red-100 border border-red-200 rounded-md text-red-700 text-xxs font-semibold">Surat Tugas</span>}
+                      {selectedReg.uploads?.pasFoto === "Ada" && <span className="px-2.5 py-1 bg-red-100 border border-red-200 rounded-md text-red-700 text-xxs font-semibold">Pas Foto</span>}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Admin decision input notes */}
+                <div className="space-y-2.5">
+                  <label className="text-slate-500 text-xxs uppercase tracking-wider font-bold block">Catatan Panitia / Alasan Penolakan</label>
+                  <textarea
+                    value={adminNote}
+                    onChange={(e) => setAdminNote(e.target.value)}
+                    placeholder="Contoh: 'Partitur lengkap, berkas disetujui.' atau 'Mohon unggah surat tugas kepala sekolah yang bertanda tangan basah.'"
+                    className="w-full bg-slate-50 border border-slate-250 focus:border-red-600/30 focus:outline-hidden text-xs rounded-xl p-3.5 text-slate-800 placeholder-slate-400 h-20"
+                  />
+                </div>
+
               </div>
 
-              {/* Admin decision input notes */}
-              <div className="space-y-2.5">
-                <label className="text-slate-500 text-xxs uppercase tracking-wider font-bold block">Catatan Panitia / Alasan Penolakan</label>
-                <textarea
-                  value={adminNote}
-                  onChange={(e) => setAdminNote(e.target.value)}
-                  placeholder="Contoh: 'Partitur lengkap, berkas disetujui.' atau 'Mohon unggah surat tugas kepala sekolah yang bertanda tangan basah.'"
-                  className="w-full bg-slate-50 border border-slate-250 focus:border-red-600/30 focus:outline-hidden text-xs rounded-xl p-3.5 text-slate-800 placeholder-slate-400 h-20"
-                />
-              </div>
-
-            </div>
-
-            {/* Modal Footer Controls */}
-            <div className="p-4 bg-slate-50 border-t border-slate-150 flex justify-between items-center gap-2">
-              <button
-                onClick={() => handleDeleteReg(selectedReg.id)}
-                className="px-4 py-2 bg-white hover:bg-red-50 text-red-600 rounded-xl text-xs font-semibold flex items-center gap-1.5 border border-slate-200 transition-colors cursor-pointer"
-              >
-                <Trash2 className="w-3.5 h-3.5" /> Hapus Berkas
-              </button>
-
-              <div className="flex gap-2">
+              {/* Modal Footer Controls */}
+              <div className="p-4 bg-slate-50 border-t border-slate-150 flex justify-between items-center gap-2">
                 <button
-                  onClick={() => handleStatusChange(selectedReg.id, "Ditolak")}
-                  className="px-4 py-2.5 bg-red-50 hover:bg-red-100 text-red-700 rounded-xl text-xs font-bold border border-red-200 cursor-pointer"
+                  onClick={() => handleDeleteReg(selectedReg.id)}
+                  className="px-4 py-2 bg-white hover:bg-red-50 text-red-600 rounded-xl text-xs font-semibold flex items-center gap-1.5 border border-slate-200 transition-colors cursor-pointer"
                 >
-                  Tolak Berkas
+                  <Trash2 className="w-3.5 h-3.5" /> Hapus Berkas
                 </button>
-                <button
-                  onClick={() => handleStatusChange(selectedReg.id, "Terverifikasi")}
-                  className="px-5 py-2.5 bg-gradient-to-r from-emerald-600 to-emerald-700 hover:from-emerald-500 hover:to-emerald-600 text-white rounded-xl text-xs font-bold flex items-center gap-1.5 cursor-pointer shadow-sm"
-                >
-                  <Check className="w-4 h-4" /> Verifikasi & Setujui
-                </button>
-              </div>
-            </div>
 
-          </div>
-        </div>
-      )}
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => handleStatusChange(selectedReg.id, "Ditolak")}
+                    className="px-4 py-2.5 bg-red-50 hover:bg-red-100 text-red-700 rounded-xl text-xs font-bold border border-red-200 cursor-pointer"
+                  >
+                    Tolak Berkas
+                  </button>
+                  <button
+                    onClick={() => handleStatusChange(selectedReg.id, "Terverifikasi")}
+                    className="px-5 py-2.5 bg-gradient-to-r from-emerald-600 to-emerald-700 hover:from-emerald-500 hover:to-emerald-600 text-white rounded-xl text-xs font-bold flex items-center gap-1.5 cursor-pointer shadow-sm"
+                  >
+                    <Check className="w-4 h-4" /> Verifikasi & Setujui
+                  </button>
+                </div>
+              </div>
+
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* DUMMY HIDDEN BUKTI SECTION ONLY USED FOR PRINTING DYNAMIC ID CARD */}
       {selectedReg && (
