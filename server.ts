@@ -14,8 +14,57 @@ dotenv.config();
 
 const app = express();
 const PORT = 3000;
-const DB_PATH = path.join(process.cwd(), "src", "database.json");
-const SETTINGS_PATH = path.join(process.cwd(), "src", "settings.json");
+let DB_PATH = path.join(process.cwd(), "src", "database.json");
+let SETTINGS_PATH = path.join(process.cwd(), "src", "settings.json");
+
+// Helper to check writable status and initialize directories
+async function initializePaths() {
+  const tmpDbPath = path.join("/tmp", "database.json");
+  const tmpSettingsPath = path.join("/tmp", "settings.json");
+
+  let useTmp = false;
+  try {
+    const testFile = path.join(process.cwd(), "src", ".write_test");
+    await fs.writeFile(testFile, "test");
+    await fs.unlink(testFile);
+  } catch (e) {
+    console.warn("Detected non-writable src directory, falling back to /tmp for storage:", e);
+    useTmp = true;
+  }
+
+  if (useTmp || process.env.NODE_ENV === "production") {
+    try {
+      const tmpDbExists = await fs.access(tmpDbPath).then(() => true).catch(() => false);
+      if (!tmpDbExists) {
+        let initialData = "[]";
+        try {
+          initialData = await fs.readFile(path.join(process.cwd(), "src", "database.json"), "utf-8");
+        } catch (e) {}
+        await fs.writeFile(tmpDbPath, initialData, "utf-8");
+      }
+      DB_PATH = tmpDbPath;
+    } catch (e) {
+      console.error("Failed to setup tmp database path:", e);
+    }
+
+    try {
+      const tmpSettingsExists = await fs.access(tmpSettingsPath).then(() => true).catch(() => false);
+      if (!tmpSettingsExists) {
+        let initialSettings = "{}";
+        try {
+          initialSettings = await fs.readFile(path.join(process.cwd(), "src", "settings.json"), "utf-8");
+        } catch (e) {}
+        await fs.writeFile(tmpSettingsPath, initialSettings, "utf-8");
+      }
+      SETTINGS_PATH = tmpSettingsPath;
+    } catch (e) {
+      console.error("Failed to setup tmp settings path:", e);
+    }
+  }
+
+  console.log("Database path resolved to:", DB_PATH);
+  console.log("Settings path resolved to:", SETTINGS_PATH);
+}
 
 // Increase JSON payload limit to allow small base64 uploads easily
 app.use(express.json({ limit: "15mb" }));
@@ -585,6 +634,7 @@ Berikan analisis ringkas eksekutif dalam Bahasa Indonesia (maksimal 3 paragraf, 
 // ==========================================
 
 async function startServer() {
+  await initializePaths();
   if (process.env.NODE_ENV !== "production") {
     const vite = await createViteServer({
       server: { middlewareMode: true },
