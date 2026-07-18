@@ -1,0 +1,6 @@
+{
+  "name": "SI-HUT RI 81",
+  "description": "Sistem Pendaftaran Peserta Lomba Peringatan HUT Proklamasi Kemerdekaan RI Ke-81 Tingkat Kecamatan Gunung Timang Tahun 2026",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

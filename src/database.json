@@ -1,0 +1,124 @@
+[
+  {
+    "id": "HUT81-0001",
+    "dataSekolah": {
+      "namaSekolah": "SMAN 1 Gunung Timang",
+      "jenjang": "SMA",
+      "alamat": "Jl. Negara Kandui - Muara Teweh, Kandui",
+      "namaPembina": "Bambang Wijaya, S.Pd.",
+      "nomorHP": "0812-5555-1234",
+      "email": "sman1gt@sch.id"
+    },
+    "dataPeserta": {
+      "namaPeserta": "Arianto Saputra",
+      "nisn": "0087654321",
+      "jenisKelamin": "Laki-laki",
+      "tanggalLahir": "2009-08-17",
+      "kecamatan": "Gunung Timang",
+      "desa": "Kandui",
+      "pasFoto": ""
+    },
+    "cabangLomba": "Lagu Tradisional - Karungut Putra",
+    "uploads": {
+      "partitur": "Ada",
+      "lirik": "Ada",
+      "suratTugas": "Ada",
+      "pasFoto": "Ada"
+    },
+    "status": "Terverifikasi",
+    "tanggalDaftar": "2026-07-10T14:30:00.000Z",
+    "nomorUrut": 1,
+    "catatan": "Persyaratan lengkap, partitur lirik sesuai format daerah Dayak."
+  },
+  {
+    "id": "HUT81-0002",
+    "dataSekolah": {
+      "namaSekolah": "SMPN 1 Gunung Timang",
+      "jenjang": "SMP",
+      "alamat": "Jl. Pendidikan No. 12, Tongka",
+      "namaPembina": "Sri Wahyuni, S.Pd.",
+      "nomorHP": "0821-3456-7890",
+      "email": "smpn1gunungtimang@gmail.com"
+    },
+    "dataPeserta": {
+      "namaPeserta": "Dian Lestari",
+      "nisn": "0098765432",
+      "jenisKelamin": "Perempuan",
+      "tanggalLahir": "2011-04-12",
+      "kecamatan": "Gunung Timang",
+      "desa": "Tongka",
+      "pasFoto": ""
+    },
+    "cabangLomba": "Vocal Solo - SMP/SMA/SMK",
+    "uploads": {
+      "partitur": "Ada",
+      "lirik": "Ada",
+      "suratTugas": "Ada",
+      "pasFoto": "Ada"
+    },
+    "status": "Menunggu Verifikasi",
+    "tanggalDaftar": "2026-07-12T09:15:00.000Z",
+    "nomorUrut": 2
+  },
+  {
+    "id": "HUT81-0003",
+    "dataSekolah": {
+      "namaSekolah": "SDN 1 Kandui",
+      "jenjang": "SD/MI",
+      "alamat": "Jl. Raya Kandui, Desa Kandui",
+      "namaPembina": "Andi Setiawan, S.Pd.SD",
+      "nomorHP": "0852-9988-7766",
+      "email": "sdn1kandui@gmail.com"
+    },
+    "dataPeserta": {
+      "namaPeserta": "Rian Hidayat",
+      "nisn": "0123456789",
+      "jenisKelamin": "Laki-laki",
+      "tanggalLahir": "2014-11-05",
+      "kecamatan": "Gunung Timang",
+      "desa": "Kandui",
+      "pasFoto": ""
+    },
+    "cabangLomba": "Vocal Solo - SD/MI",
+    "uploads": {
+      "partitur": "Ada",
+      "lirik": "Ada",
+      "suratTugas": "Ada",
+      "pasFoto": "Ada"
+    },
+    "status": "Terverifikasi",
+    "tanggalDaftar": "2026-07-14T11:20:00.000Z",
+    "nomorUrut": 3,
+    "catatan": "Partitur Bendera Merah Putih terlampir."
+  },
+  {
+    "id": "HUT81-0004",
+    "dataSekolah": {
+      "namaSekolah": "SMKN 1 Gunung Timang",
+      "jenjang": "SMK",
+      "alamat": "Jl. Kandui - Montallat, Kandui",
+      "namaPembina": "Eko Prasetyo, S.T.",
+      "nomorHP": "0813-8822-1100",
+      "email": "smkn1gunungtimang@sch.id"
+    },
+    "dataPeserta": {
+      "namaPeserta": "Putri Dayanti",
+      "nisn": "0076543210",
+      "jenisKelamin": "Perempuan",
+      "tanggalLahir": "2008-05-22",
+      "kecamatan": "Gunung Timang",
+      "desa": "Tongka",
+      "pasFoto": ""
+    },
+    "cabangLomba": "Lagu Tradisional - Dongkoi Putri",
+    "uploads": {
+      "partitur": "Ada",
+      "lirik": "Ada",
+      "suratTugas": "Ada",
+      "pasFoto": "Ada"
+    },
+    "status": "Menunggu Verifikasi",
+    "tanggalDaftar": "2026-07-15T16:45:00.000Z",
+    "nomorUrut": 4
+  }
+]

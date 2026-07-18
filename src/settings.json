@@ -1,0 +1,31 @@
+{
+  "logo": "",
+  "slogan": "Merdeka Berprestasi, Berkarya untuk Indonesia.",
+  "title": "Rayakan Kemerdekaan Dengan Prestasi",
+  "description": "Pendaftaran Peserta Lomba HUT Proklamasi Kemerdekaan RI Ke-81 Tingkat Kecamatan Gunung Timang Tahun 2026.",
+  "announcements": [
+    "Pendaftaran Gratis: 100% Bebas Biaya Pendaftaran untuk Seluruh Sekolah di Kecamatan Gunung Timang!",
+    "Batas Akhir Berkas Fisik: Pengumpulan berkas, partitur, lirik ditutup tanggal 10 Agustus 2026.",
+    "Verifikasi Instan: Unduh bukti pendaftaran digital berkode QR & Barcode setelah submit formulir."
+  ],
+  "gallery": [
+    {
+      "id": "gal-1",
+      "title": "Pentas Lagu Tradisional",
+      "description": "Keseruan penampilan salah satu kontestan menyanyikan lagu daerah Karungut.",
+      "imageUrl": "https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?auto=format&fit=crop&w=600&q=80"
+    },
+    {
+      "id": "gal-2",
+      "title": "Latihan Paduan Suara",
+      "description": "Harmonisasi merdu tim paduan suara mempersiapkan lagu wajib Hari Merdeka.",
+      "imageUrl": "https://images.unsplash.com/photo-1465847899084-d164df4dedc6?auto=format&fit=crop&w=600&q=80"
+    },
+    {
+      "id": "gal-3",
+      "title": "Technical Meeting Utama",
+      "description": "Koordinasi para guru pembina se-Kecamatan Gunung Timang di GPU Kandui.",
+      "imageUrl": "https://images.unsplash.com/photo-1515187029135-18ee286d815b?auto=format&fit=crop&w=600&q=80"
+    }
+  ]
+}
