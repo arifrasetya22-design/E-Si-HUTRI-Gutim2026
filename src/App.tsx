@@ -7,7 +7,8 @@ import React, { useState, useEffect } from "react";
 import { 
   Home, FileText, BookOpen, PhoneCall, ShieldCheck, Sparkles, 
   MapPin, Calendar, Award, CheckCircle2, ChevronRight, Menu, X, Users, Building2, Ticket,
-  Search, Filter, Image as ImageIcon, Camera, Trophy, CheckSquare, CalendarDays
+  Search, Filter, Image as ImageIcon, Camera, Trophy, CheckSquare, CalendarDays,
+  Loader2, XCircle, ShieldAlert
 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { BackgroundBendera } from "./components/BackgroundBendera";
@@ -51,6 +52,68 @@ export default function App() {
   const [publicSearch, setPublicSearch] = useState("");
   const [publicSchoolFilter, setPublicSchoolFilter] = useState("Semua");
   const [publicCabangFilter, setPublicCabangFilter] = useState("Semua");
+
+  // Custom Toast State
+  const [toast, setToast] = useState<{ message: string; type: "success" | "error" | "info" | "warning" } | null>(null);
+
+  const showToast = (message: string, type: "success" | "error" | "info" | "warning" = "success") => {
+    setToast({ message, type });
+  };
+
+  useEffect(() => {
+    if (toast) {
+      const timer = setTimeout(() => {
+        setToast(null);
+      }, 4000);
+      return () => clearTimeout(timer);
+    }
+  }, [toast]);
+
+  // QR Code Live Verification Scan Modal States
+  const [verifiedRegistration, setVerifiedRegistration] = useState<Registration | null>(null);
+  const [verificationLoading, setVerificationLoading] = useState(false);
+  const [showVerificationModal, setShowVerificationModal] = useState(false);
+  const [scannedId, setScannedId] = useState<string>("");
+
+  const fetchVerificationDetail = async (id: string) => {
+    setVerificationLoading(true);
+    setScannedId(id);
+    try {
+      const response = await fetch("/api/registrations");
+      const result = await response.json();
+      if (result.success && result.data) {
+        const list = result.data as Registration[];
+        const found = list.find(r => r.id.toLowerCase() === id.toLowerCase());
+        setVerifiedRegistration(found || null);
+        if (found) {
+          showToast(`Berhasil memindai peserta: ${found.dataPeserta?.namaPeserta}`, "success");
+        } else {
+          showToast(`Peserta dengan ID ${id} tidak ditemukan`, "error");
+        }
+      } else {
+        const found = publicRegistrations.find(r => r.id.toLowerCase() === id.toLowerCase());
+        setVerifiedRegistration(found || null);
+      }
+    } catch (e) {
+      const found = publicRegistrations.find(r => r.id.toLowerCase() === id.toLowerCase());
+      setVerifiedRegistration(found || null);
+    } finally {
+      setVerificationLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search);
+      const verifyId = params.get("verify");
+      if (verifyId) {
+        setShowVerificationModal(true);
+        fetchVerificationDetail(verifyId);
+        // Clear query parameters gracefully
+        window.history.replaceState({}, document.title, window.location.pathname);
+      }
+    }
+  }, [publicRegistrations]);
 
   const fetchStats = async () => {
     try {
@@ -588,7 +651,7 @@ export default function App() {
 
             {/* 2. FORMULIR TAB */}
             {activeTab === "formulir" && (
-              <FormulirPendaftaran onRegistrationSuccess={handleRefreshAll} />
+              <FormulirPendaftaran onRegistrationSuccess={handleRefreshAll} showToast={showToast} />
             )}
 
             {/* 3. JUKNIS TAB */}
@@ -608,6 +671,7 @@ export default function App() {
                 settings={settings}
                 onSettingsChange={fetchSettings}
                 onActionSuccess={handleRefreshAll} 
+                showToast={showToast}
               />
             )}
 
@@ -617,6 +681,180 @@ export default function App() {
 
       {/* ----------------- DYNAMIC FLOATING CHAT ASSISTANT ----------------- */}
       <AIAssistant />
+
+      {/* ----------------- LIVE QR CODE SCAN VERIFICATION MODAL ----------------- */}
+      <AnimatePresence>
+        {showVerificationModal && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/60 backdrop-blur-md flex items-center justify-center p-4 z-50 overflow-y-auto"
+          >
+            <motion.div
+              initial={{ scale: 0.92, y: 30 }}
+              animate={{ scale: 1, y: 0 }}
+              exit={{ scale: 0.92, y: 30 }}
+              className="bg-white border border-slate-200 rounded-[32px] w-full max-w-lg overflow-hidden shadow-2xl flex flex-col text-left relative"
+            >
+              {/* Header Red-White Banner */}
+              <div className="bg-gradient-to-r from-red-600 to-red-700 p-6 text-white relative">
+                <div className="absolute top-3 right-3">
+                  <button
+                    onClick={() => {
+                      setShowVerificationModal(false);
+                      setVerifiedRegistration(null);
+                    }}
+                    className="p-1.5 hover:bg-white/10 rounded-full text-red-100 hover:text-white transition-colors cursor-pointer"
+                  >
+                    <X className="w-5 h-5" />
+                  </button>
+                </div>
+                <span className="text-[10px] uppercase font-bold tracking-widest text-red-100 flex items-center gap-1">
+                  <ShieldCheck className="w-4 h-4 text-yellow-300" /> Verifikasi Kartu Peserta Resmi
+                </span>
+                <h3 className="text-lg font-black mt-1">SI-HUT RI 81 Portal</h3>
+                <p className="text-xxs text-red-100/80 mt-0.5">Kecamatan Gunung Timang, Kabupaten Barito Utara</p>
+              </div>
+
+              {/* Modal Body */}
+              <div className="p-6 md:p-8 space-y-6">
+                {verificationLoading ? (
+                  <div className="flex flex-col items-center justify-center py-10 space-y-3">
+                    <Loader2 className="w-8 h-8 animate-spin text-red-600" />
+                    <p className="text-xs font-semibold text-slate-500">Menghubungkan ke database...</p>
+                  </div>
+                ) : verifiedRegistration ? (
+                  <div className="space-y-6">
+                    {/* Status Box */}
+                    <div className="flex items-center gap-4 p-4 rounded-2xl border bg-slate-50 border-slate-200">
+                      <div className={`p-3 rounded-full shrink-0 ${
+                        verifiedRegistration.status === "Terverifikasi"
+                          ? "bg-emerald-100 text-emerald-600 border border-emerald-200"
+                          : verifiedRegistration.status === "Ditolak"
+                          ? "bg-red-100 text-red-600 border border-red-200"
+                          : "bg-amber-100 text-amber-600 border border-amber-200"
+                      }`}>
+                        <ShieldCheck className="w-6 h-6" />
+                      </div>
+                      <div className="text-left flex-1">
+                        <span className="text-[10px] text-slate-400 uppercase font-mono tracking-wider block">Status Verifikasi</span>
+                        <h4 className={`text-sm font-extrabold uppercase mt-0.5 ${
+                          verifiedRegistration.status === "Terverifikasi"
+                            ? "text-emerald-700"
+                            : verifiedRegistration.status === "Ditolak"
+                            ? "text-red-700"
+                            : "text-amber-700 animate-pulse"
+                        }`}>
+                          {verifiedRegistration.status}
+                        </h4>
+                        <p className="text-xxs text-slate-500 mt-1">
+                          {verifiedRegistration.status === "Terverifikasi"
+                            ? "Peserta terdaftar secara sah dan berhak mengikuti perlombaan di lokasi."
+                            : verifiedRegistration.status === "Ditolak"
+                            ? `Pendaftaran ditolak. Catatan: ${verifiedRegistration.catatan || "Persyaratan berkas tidak lengkap."}`
+                            : "Berkas sedang diperiksa oleh Panitia Kecamatan Gunung Timang."}
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* Participant Credentials Details Card */}
+                    <div className="p-5 bg-white border border-slate-150 rounded-2xl shadow-xxs space-y-4">
+                      <div className="grid grid-cols-2 gap-x-4 gap-y-3 text-xs">
+                        <div>
+                          <span className="text-[9px] uppercase font-bold text-slate-400 block tracking-wider">ID Registrasi</span>
+                          <span className="font-mono text-xs font-black text-red-600 mt-0.5 block">{verifiedRegistration.id}</span>
+                        </div>
+                        <div>
+                          <span className="text-[9px] uppercase font-bold text-slate-400 block tracking-wider">Cabang Lomba</span>
+                          <span className="font-extrabold text-slate-800 mt-0.5 block">{verifiedRegistration.cabangLomba}</span>
+                        </div>
+                        <div className="col-span-2 border-t border-slate-100 my-1"></div>
+                        <div className="col-span-2">
+                          <span className="text-[9px] uppercase font-bold text-slate-400 block tracking-wider">Nama Lengkap Peserta</span>
+                          <span className="font-bold text-slate-900 text-sm mt-0.5 block">{verifiedRegistration.dataPeserta?.namaPeserta}</span>
+                        </div>
+                        <div>
+                          <span className="text-[9px] uppercase font-bold text-slate-400 block tracking-wider">NISN</span>
+                          <span className="font-mono font-semibold text-slate-700 mt-0.5 block">{verifiedRegistration.dataPeserta?.nisn}</span>
+                        </div>
+                        <div>
+                          <span className="text-[9px] uppercase font-bold text-slate-400 block tracking-wider">Asal Desa</span>
+                          <span className="font-semibold text-slate-700 mt-0.5 block">{verifiedRegistration.dataPeserta?.desa}</span>
+                        </div>
+                        <div className="col-span-2 border-t border-slate-100 my-1"></div>
+                        <div className="col-span-2">
+                          <span className="text-[9px] uppercase font-bold text-slate-400 block tracking-wider">Sekolah Instansi</span>
+                          <span className="font-semibold text-slate-800 mt-0.5 block">{verifiedRegistration.dataSekolah?.namaSekolah} ({verifiedRegistration.dataSekolah?.jenjang})</span>
+                        </div>
+                        <div className="col-span-2">
+                          <span className="text-[9px] uppercase font-bold text-slate-400 block tracking-wider">Guru Pembina / HP</span>
+                          <span className="font-medium text-slate-700 mt-0.5 block">{verifiedRegistration.dataSekolah?.namaPembina} ({verifiedRegistration.dataSekolah?.nomorHP})</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="text-center py-6 space-y-3">
+                    <div className="w-12 h-12 rounded-full bg-red-100 border border-red-200 text-red-600 flex items-center justify-center mx-auto shadow-xxs">
+                      <X className="w-6 h-6" />
+                    </div>
+                    <div className="space-y-1">
+                      <h4 className="text-sm font-bold text-slate-800">Kartu Tidak Valid / Tidak Ditemukan</h4>
+                      <p className="text-xxs text-slate-500 max-w-[280px] mx-auto leading-relaxed">
+                        ID Pendaftaran <span className="font-mono text-red-600 font-bold">"{scannedId}"</span> tidak terdaftar dalam database resmi pendaftaran SI-HUT RI 81.
+                      </p>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Modal Footer */}
+              <div className="p-4 bg-slate-50 border-t border-slate-150 flex justify-end">
+                <button
+                  onClick={() => {
+                    setShowVerificationModal(false);
+                    setVerifiedRegistration(null);
+                  }}
+                  className="px-5 py-2.5 bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs rounded-xl cursor-pointer"
+                >
+                  Tutup Hasil Scan
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* ----------------- GORGEOUS TOAST FLOATING NOTIFICATION ----------------- */}
+      <AnimatePresence>
+        {toast && (
+          <motion.div
+            initial={{ opacity: 0, y: -50, x: "-50%", scale: 0.9 }}
+            animate={{ opacity: 1, y: 0, x: "-50%", scale: 1 }}
+            exit={{ opacity: 0, y: -20, x: "-50%", scale: 0.95 }}
+            transition={{ type: "spring", damping: 15, stiffness: 120 }}
+            className="fixed top-6 left-1/2 -translate-x-1/2 z-50 pointer-events-auto"
+          >
+            <div className={`flex items-center gap-3 px-5 py-3.5 rounded-2xl shadow-xl border ${
+              toast.type === "success" 
+                ? "bg-emerald-50 border-emerald-200 text-emerald-800"
+                : toast.type === "error"
+                ? "bg-red-50 border-red-200 text-red-800"
+                : toast.type === "warning"
+                ? "bg-amber-50 border-amber-200 text-amber-800"
+                : "bg-blue-50 border-blue-200 text-blue-800"
+            }`}>
+              {toast.type === "success" && <CheckCircle2 className="w-5 h-5 text-emerald-600 shrink-0" />}
+              {toast.type === "error" && <XCircle className="w-5 h-5 text-red-600 shrink-0" />}
+              {toast.type === "warning" && <ShieldAlert className="w-5 h-5 text-amber-600 shrink-0" />}
+              {toast.type === "info" && <Sparkles className="w-5 h-5 text-blue-600 shrink-0" />}
+              
+              <span className="text-xs font-bold font-sans tracking-wide leading-none">{toast.message}</span>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Footer Status Bar */}
       <footer className="py-6 bg-white border-t border-slate-200 px-6 md:px-10 flex flex-col md:flex-row items-center justify-between gap-4 z-10 text-slate-500 text-xxs mt-12 print:hidden shadow-xs">

@@ -18,7 +18,41 @@ export const AdminDashboard: React.FC<{
   settings: HomepageSettings;
   onSettingsChange: () => void;
   onActionSuccess: () => void;
-}> = ({ stats, settings, onSettingsChange, onActionSuccess }) => {
+  showToast: (message: string, type?: "success" | "error" | "info" | "warning") => void;
+}> = ({ stats, settings, onSettingsChange, onActionSuccess, showToast }) => {
+  // Client-side image compression helper to dramatically reduce base64 size (e.g. from 5MB to 60KB)
+  const compressImage = (base64Str: string, maxWidth = 800, maxHeight = 600, quality = 0.7): Promise<string> => {
+    return new Promise((resolve) => {
+      const img = new Image();
+      img.src = base64Str;
+      img.onload = () => {
+        const canvas = document.createElement("canvas");
+        let width = img.width;
+        let height = img.height;
+
+        if (width > maxWidth) {
+          height = Math.round((height * maxWidth) / width);
+          width = maxWidth;
+        }
+        if (height > maxHeight) {
+          width = Math.round((width * maxHeight) / height);
+          height = maxHeight;
+        }
+
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext("2d");
+        if (ctx) {
+          ctx.drawImage(img, 0, 0, width, height);
+          resolve(canvas.toDataURL("image/jpeg", quality));
+        } else {
+          resolve(base64Str);
+        }
+      };
+      img.onerror = () => resolve(base64Str);
+    });
+  };
+
   // Login State
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [username, setUsername] = useState("");
@@ -92,9 +126,11 @@ export const AdminDashboard: React.FC<{
     const file = e.target.files?.[0];
     if (!file) return;
     const reader = new FileReader();
-    reader.onload = (event) => {
+    reader.onload = async (event) => {
       if (event.target?.result) {
-        setLogo(event.target.result as string);
+        const compressed = await compressImage(event.target.result as string, 500, 500, 0.7);
+        setLogo(compressed);
+        showToast("Logo berhasil diunggah & dikompres!", "success");
       }
     };
     reader.readAsDataURL(file);
@@ -105,9 +141,11 @@ export const AdminDashboard: React.FC<{
     const file = e.target.files?.[0];
     if (!file) return;
     const reader = new FileReader();
-    reader.onload = (event) => {
+    reader.onload = async (event) => {
       if (event.target?.result) {
-        setCamatPhoto(event.target.result as string);
+        const compressed = await compressImage(event.target.result as string, 400, 500, 0.7);
+        setCamatPhoto(compressed);
+        showToast("Foto Camat berhasil diunggah & dikompres!", "success");
       }
     };
     reader.readAsDataURL(file);
@@ -118,9 +156,11 @@ export const AdminDashboard: React.FC<{
     const file = e.target.files?.[0];
     if (!file) return;
     const reader = new FileReader();
-    reader.onload = (event) => {
+    reader.onload = async (event) => {
       if (event.target?.result) {
-        setNewGalleryImgUrl(event.target.result as string);
+        const compressed = await compressImage(event.target.result as string, 800, 600, 0.7);
+        setNewGalleryImgUrl(compressed);
+        showToast("Foto dokumentasi berhasil diunggah & dikompres!", "success");
       }
     };
     reader.readAsDataURL(file);
@@ -150,11 +190,12 @@ export const AdminDashboard: React.FC<{
       const result = await response.json();
       if (result.success) {
         onSettingsChange();
+        showToast("Pengaturan galeri berhasil diperbarui!", "success");
       } else {
-        alert("Gagal menyimpan ke database.");
+        showToast("Gagal menyimpan ke database.", "error");
       }
     } catch (err) {
-      alert("Kesalahan jaringan saat menyimpan.");
+      showToast("Kesalahan jaringan saat menyimpan.", "error");
     } finally {
       setIsSavingSettings(false);
     }
@@ -182,13 +223,13 @@ export const AdminDashboard: React.FC<{
       });
       const result = await response.json();
       if (result.success) {
-        alert("Pengaturan beranda berhasil disimpan!");
+        showToast("Pengaturan beranda berhasil disimpan!", "success");
         onSettingsChange();
       } else {
-        alert("Gagal menyimpan pengaturan.");
+        showToast("Gagal menyimpan pengaturan.", "error");
       }
     } catch (err) {
-      alert("Kesalahan jaringan saat menyimpan pengaturan.");
+      showToast("Kesalahan jaringan saat menyimpan pengaturan.", "error");
     } finally {
       setIsSavingSettings(false);
     }
@@ -206,7 +247,7 @@ export const AdminDashboard: React.FC<{
 
   const handleAddOrEditGalleryItem = async () => {
     if (!newGalleryTitle.trim() || !newGalleryImgUrl.trim()) {
-      alert("Judul galeri dan foto dokumentasi wajib diisi!");
+      showToast("Judul galeri dan foto dokumentasi wajib diisi!", "warning");
       return;
     }
 
@@ -225,6 +266,7 @@ export const AdminDashboard: React.FC<{
         return item;
       });
       setEditingGalleryId(null);
+      showToast("Item galeri berhasil diperbarui!", "success");
     } else {
       // Add new
       const newItem = {
@@ -234,6 +276,7 @@ export const AdminDashboard: React.FC<{
         imageUrl: newGalleryImgUrl.trim()
       };
       updatedGallery = [...gallery, newItem];
+      showToast("Item galeri berhasil ditambahkan!", "success");
     }
 
     setGallery(updatedGallery);
@@ -321,7 +364,7 @@ export const AdminDashboard: React.FC<{
       setExpectedOtp(genOtp);
       setOtpSent(true);
       setOtpLoading(false);
-      alert(`🔑 [Simulasi OTP Email]: Kode OTP telah dikirim ke email panitia: ${genOtp}`);
+      showToast(`🔑 [Simulasi OTP]: Kode OTP Anda adalah: ${genOtp}`, "info");
     }, 1200);
   };
 
@@ -331,8 +374,10 @@ export const AdminDashboard: React.FC<{
     if (otpCode === expectedOtp || otpCode === "818126") {
       setIsAuthenticated(true);
       setLoginError("");
+      showToast("Verifikasi OTP Berhasil! Selamat Datang.", "success");
     } else {
       setLoginError("Kode OTP salah! Silakan periksa kembali.");
+      showToast("Kode OTP salah!", "error");
     }
   };
 
@@ -350,10 +395,10 @@ export const AdminDashboard: React.FC<{
         setSelectedReg(null);
         setAdminNote("");
         onActionSuccess(); // update stats in App.tsx
-        alert(`Status pendaftaran berhasil diubah menjadi ${newStatus}!`);
+        showToast(`Status pendaftaran berhasil diubah menjadi ${newStatus}!`, "success");
       }
     } catch (err) {
-      alert("Gagal merubah status verifikasi.");
+      showToast("Gagal mengubah status verifikasi.", "error");
     }
   };
 
@@ -369,10 +414,10 @@ export const AdminDashboard: React.FC<{
           fetchRegistrations();
           setSelectedReg(null);
           onActionSuccess();
-          alert("Pendaftaran berhasil dihapus!");
+          showToast("Pendaftaran berhasil dihapus secara permanen!", "success");
         }
       } catch (err) {
-        alert("Gagal menghapus pendaftaran.");
+        showToast("Gagal menghapus pendaftaran.", "error");
       }
     }
   };
@@ -1008,6 +1053,7 @@ export const AdminDashboard: React.FC<{
                     type="text"
                     value={newAnnouncement}
                     onChange={(e) => setNewAnnouncement(e.target.value)}
+                    onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); handleAddAnnouncement(); } }}
                     placeholder="Tulis teks pengumuman baru di sini..."
                     className="flex-1 bg-white border border-slate-200 focus:border-red-600/30 focus:outline-hidden text-xxs rounded-xl px-3 py-2 text-slate-800"
                   />
@@ -1093,6 +1139,7 @@ export const AdminDashboard: React.FC<{
                         type="text"
                         value={newGalleryTitle}
                         onChange={(e) => setNewGalleryTitle(e.target.value)}
+                        onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); handleAddOrEditGalleryItem(); } }}
                         placeholder="Judul Dokumentasi (contoh: Lomba Paduan Suara)"
                         className="w-full bg-slate-50 border border-slate-200 focus:bg-white focus:ring-2 focus:ring-red-500/15 focus:border-red-500 focus:outline-hidden text-xs rounded-xl px-3.5 py-2.5 text-slate-800 font-medium"
                       />
@@ -1104,6 +1151,7 @@ export const AdminDashboard: React.FC<{
                         type="text"
                         value={newGalleryImgUrl}
                         onChange={(e) => setNewGalleryImgUrl(e.target.value)}
+                        onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); handleAddOrEditGalleryItem(); } }}
                         placeholder="Pilih file upload atau ketik/paste URL gambar..."
                         className="w-full bg-slate-50 border border-slate-200 focus:bg-white focus:ring-2 focus:ring-red-500/15 focus:border-red-500 focus:outline-hidden text-xs rounded-xl px-3.5 py-2.5 text-slate-800 font-mono"
                       />
@@ -1116,6 +1164,7 @@ export const AdminDashboard: React.FC<{
                       type="text"
                       value={newGalleryDesc}
                       onChange={(e) => setNewGalleryDesc(e.target.value)}
+                      onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); handleAddOrEditGalleryItem(); } }}
                       placeholder="Deskripsi singkat (contoh: Penampilan meriah dari tim paduan suara)"
                       className="w-full bg-slate-50 border border-slate-200 focus:bg-white focus:ring-2 focus:ring-red-500/15 focus:border-red-500 focus:outline-hidden text-xs rounded-xl px-3.5 py-2.5 text-slate-800"
                     />

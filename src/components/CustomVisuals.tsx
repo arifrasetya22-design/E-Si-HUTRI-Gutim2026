@@ -83,18 +83,24 @@ export const Barcode: React.FC<VisualProps> = ({ value, className = "" }) => {
 };
 
 /**
- * Generates a beautiful dynamic QR Code SVG with Indonesian flag in center
+ * Generates a beautiful dynamic QR Code SVG or real image with Indonesian flag in center
  */
 export const QRCode: React.FC<VisualProps> = ({ value, className = "", size = 120 }) => {
+  const [useFallback, setUseFallback] = React.useState(false);
   const seedString = value || "HUT81-0001";
   
-  // Generate a deterministic 21x21 QR matrix based on a string hash
+  // Real scannable QR Code URL pointing to a verification URL on this host
+  const verificationUrl = typeof window !== 'undefined' 
+    ? `${window.location.origin}/?verify=${encodeURIComponent(seedString)}`
+    : `https://si-hutri81.id/?verify=${encodeURIComponent(seedString)}`;
+
+  // Use the reliable open-source QRServer API to create a beautifully rendered red-themed QR code
+  const qrApiUrl = `https://api.qrserver.com/v1/create-qr-code/?size=${size}x${size}&data=${encodeURIComponent(verificationUrl)}&color=dc2626`;
+
+  // Deterministic 21x21 fallback matrix if offline/error
   const matrixSize = 21;
-  
   const generateMatrix = () => {
     const matrix: boolean[][] = Array(matrixSize).fill(null).map(() => Array(matrixSize).fill(false));
-    
-    // 1. Finder patterns (three corners)
     const drawFinder = (x: number, y: number) => {
       for (let r = 0; r < 7; r++) {
         for (let c = 0; c < 7; c++) {
@@ -106,81 +112,87 @@ export const QRCode: React.FC<VisualProps> = ({ value, className = "", size = 12
         }
       }
     };
-    
-    drawFinder(0, 0); // top left
-    drawFinder(matrixSize - 7, 0); // top right
-    drawFinder(0, matrixSize - 7); // bottom left
-    
-    // 2. Alignment patterns & timing lines
+    drawFinder(0, 0);
+    drawFinder(matrixSize - 7, 0);
+    drawFinder(0, matrixSize - 7);
     for (let i = 7; i < matrixSize - 7; i++) {
       matrix[6][i] = i % 2 === 0;
       matrix[i][6] = i % 2 === 0;
     }
-    
-    // 3. Populate other areas deterministically using a string hash
     let hash = 5381;
     for (let i = 0; i < seedString.length; i++) {
       hash = ((hash << 5) + hash) + seedString.charCodeAt(i);
     }
-    
     for (let r = 0; r < matrixSize; r++) {
       for (let c = 0; c < matrixSize; c++) {
-        // Skip finder areas
         const inTopLeft = r < 8 && c < 8;
         const inTopRight = r < 8 && c >= matrixSize - 8;
         const inBottomLeft = r >= matrixSize - 8 && c < 8;
-        // Skip timing line areas partially or center area (for logo)
         const inCenter = r >= 9 && r <= 11 && c >= 9 && c <= 11;
-        
         if (!inTopLeft && !inTopRight && !inBottomLeft && !inCenter) {
           const val = (hash >> ((r * c + r + c) % 31)) & 1;
           matrix[r][c] = val === 1;
         }
       }
     }
-    
     return matrix;
   };
-  
-  const matrix = generateMatrix();
-  const cellSize = size / matrixSize;
+
+  if (useFallback) {
+    const matrix = generateMatrix();
+    const cellSize = size / matrixSize;
+    return (
+      <div className={`relative flex flex-col items-center p-2.5 bg-white rounded-2xl border border-slate-150 shadow-xs ${className}`} style={{ width: size + 20, height: size + 20 }}>
+        <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`}>
+          <g fill="#EF4444">
+            {matrix.map((row, r) => 
+              row.map((active, c) => {
+                if (active) {
+                  return (
+                    <rect
+                      key={`${r}-${c}`}
+                      x={c * cellSize}
+                      y={r * cellSize}
+                      width={cellSize - 0.2}
+                      height={cellSize - 0.2}
+                      rx={cellSize * 0.15}
+                    />
+                  );
+                }
+                return null;
+              })
+            )}
+          </g>
+          {/* Draw a gorgeous Indonesian flag shield in the center */}
+          <g transform={`translate(${size / 2 - 12}, ${size / 2 - 12})`}>
+            <circle cx="12" cy="12" r="11" fill="white" stroke="#E2E8F0" strokeWidth="1" />
+            <path d="M 12 1 A 11 11 0 0 1 23 12 L 1 12 A 11 11 0 0 1 12 1 Z" fill="#EF4444" />
+            <path d="M 12 23 A 11 11 0 0 1 1 12 L 23 12 A 11 11 0 0 1 12 23 Z" fill="#FFFFFF" />
+            <circle cx="12" cy="12" r="11" fill="none" stroke="#F59E0B" strokeWidth="1.5" />
+          </g>
+        </svg>
+      </div>
+    );
+  }
 
   return (
-    <div className={`relative flex flex-col items-center p-2.5 bg-white rounded-md border border-gray-100 shadow-xs ${className}`} style={{ width: size + 20, height: size + 20 }}>
-      <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`}>
-        {/* Draw modules */}
-        <g fill="currentColor">
-          {matrix.map((row, r) => 
-            row.map((active, c) => {
-              if (active) {
-                return (
-                  <rect
-                    key={`${r}-${c}`}
-                    x={c * cellSize}
-                    y={r * cellSize}
-                    width={cellSize - 0.2}
-                    height={cellSize - 0.2}
-                    rx={cellSize * 0.15} // slightly rounded modules for AI/Modern feel
-                  />
-                );
-              }
-              return null;
-            })
-          )}
-        </g>
-        
-        {/* Draw a gorgeous Indonesian flag shield in the center */}
-        <g transform={`translate(${size / 2 - 12}, ${size / 2 - 12})`}>
-          {/* White border circle */}
-          <circle cx="12" cy="12" r="11" fill="white" stroke="#E2E8F0" strokeWidth="1" />
-          {/* Merah / Red top half */}
-          <path d="M 12 1 A 11 11 0 0 1 23 12 L 1 12 A 11 11 0 0 1 12 1 Z" fill="#EF4444" />
-          {/* Putih / White bottom half */}
-          <path d="M 12 23 A 11 11 0 0 1 1 12 L 23 12 A 11 11 0 0 1 12 23 Z" fill="#FFFFFF" />
-          {/* Outer gold ring border */}
-          <circle cx="12" cy="12" r="11" fill="none" stroke="#F59E0B" strokeWidth="1.5" />
-        </g>
-      </svg>
+    <div className={`relative flex flex-col items-center p-2.5 bg-white rounded-2xl border border-slate-150 shadow-xs ${className}`} style={{ width: size + 20, height: size + 20 }}>
+      <img
+        src={qrApiUrl}
+        alt="QR Code"
+        width={size}
+        height={size}
+        onError={() => setUseFallback(true)}
+        className="rounded-lg object-contain"
+        referrerPolicy="no-referrer"
+      />
+      {/* Decorative tiny Red-White dot in center */}
+      <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-5 h-5 rounded-full bg-white flex items-center justify-center shadow-xs border border-slate-100">
+        <div className="w-3.5. h-3.5 rounded-full overflow-hidden flex flex-col border border-slate-100">
+          <div className="w-full h-[50%] bg-red-600" />
+          <div className="w-full h-[50%] bg-white" />
+        </div>
+      </div>
     </div>
   );
 };

@@ -31,7 +31,10 @@ const CABANG_LOMBA = [
   "Vocal Solo - SMP/SMA/SMK"
 ];
 
-export const FormulirPendaftaran: React.FC<{ onRegistrationSuccess: () => void }> = ({ onRegistrationSuccess }) => {
+export const FormulirPendaftaran: React.FC<{ 
+  onRegistrationSuccess: () => void;
+  showToast: (message: string, type?: "success" | "error" | "info" | "warning") => void;
+}> = ({ onRegistrationSuccess, showToast }) => {
   // Form State
   const [school, setSchool] = useState<SchoolData>({
     namaSekolah: "",
@@ -144,12 +147,12 @@ export const FormulirPendaftaran: React.FC<{ onRegistrationSuccess: () => void }
           if (d.jenisKelamin) setParticipant(prev => ({ ...prev, jenisKelamin: d.jenisKelamin }));
           if (d.desa) setParticipant(prev => ({ ...prev, desa: d.desa }));
           
-          alert("✨ AI Sukses Mengekstrak Data! Formulir Anda telah terisi secara otomatis dari dokumen.");
+          showToast("✨ AI Sukses Mengekstrak Data! Formulir telah terisi secara otomatis.", "success");
         }
       };
       reader.readAsDataURL(file);
     } catch (err) {
-      alert("Gagal melakukan pemindaian AI OCR.");
+      showToast("Gagal melakukan pemindaian AI OCR.", "error");
     } finally {
       setOcrLoading(false);
     }
@@ -158,7 +161,7 @@ export const FormulirPendaftaran: React.FC<{ onRegistrationSuccess: () => void }
   // AI Live Validation Analyzer
   const analyzeWithAI = async () => {
     if (!school.namaSekolah || !participant.namaPeserta || !participant.nisn) {
-      alert("Mohon lengkapi Nama Sekolah, Nama Peserta, dan NISN terlebih dahulu untuk dianalisis oleh AI.");
+      showToast("Mohon lengkapi Nama Sekolah, Nama Peserta, dan NISN terlebih dahulu untuk dianalisis oleh AI.", "warning");
       return;
     }
 
@@ -181,9 +184,10 @@ export const FormulirPendaftaran: React.FC<{ onRegistrationSuccess: () => void }
           warnings: data.warnings,
           suggestions: data.suggestions
         });
+        showToast("Validasi AI Selesai! Silakan lihat rekomendasi di bawah.", "info");
       }
     } catch (err) {
-      alert("Asisten AI sedang sibuk. Silakan ajukan validasi kembali.");
+      showToast("Asisten AI sedang sibuk. Silakan ajukan validasi kembali.", "warning");
     } finally {
       setAiValidating(false);
     }
@@ -206,7 +210,7 @@ export const FormulirPendaftaran: React.FC<{ onRegistrationSuccess: () => void }
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!declarations.dataCorrect || !declarations.rulesAgreed) {
-      alert("Harap centang lembar pernyataan keabsahan data dan kesediaan mengikuti aturan.");
+      showToast("Harap centang lembar pernyataan keabsahan data dan kesediaan mengikuti aturan.", "warning");
       return;
     }
 
@@ -231,11 +235,12 @@ export const FormulirPendaftaran: React.FC<{ onRegistrationSuccess: () => void }
       if (result.success) {
         setSuccessData(result.data);
         onRegistrationSuccess(); // trigger stats reload
+        showToast("Pendaftaran Anda berhasil dikirim!", "success");
       } else {
-        alert("Pendaftaran gagal: " + result.error);
+        showToast("Pendaftaran gagal: " + result.error, "error");
       }
     } catch (err) {
-      alert("Terjadi kesalahan sistem saat mengirim data.");
+      showToast("Terjadi kesalahan sistem saat mengirim data.", "error");
     } finally {
       setSubmitting(false);
     }
@@ -940,7 +945,7 @@ export const FormulirPendaftaran: React.FC<{ onRegistrationSuccess: () => void }
             type="button"
             onClick={() => {
               if (!school.namaSekolah || !participant.namaPeserta) {
-                alert("Harap lengkapi formulir terlebih dahulu untuk menampilkan Pratinjau.");
+                showToast("Harap lengkapi formulir terlebih dahulu untuk menampilkan Pratinjau.", "warning");
                 return;
               }
               setIsPreview(true);
