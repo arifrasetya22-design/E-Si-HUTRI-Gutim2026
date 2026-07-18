@@ -18,6 +18,7 @@ import { JuknisView } from "./components/JuknisView";
 import { NarahubungView } from "./components/NarahubungView";
 import { FormulirPendaftaran } from "./components/FormulirPendaftaran";
 import { AdminDashboard } from "./components/AdminDashboard";
+import { RegistrationCharts } from "./components/RegistrationCharts";
 import { DashboardStats, HomepageSettings, Registration } from "./types";
 
 export default function App() {
@@ -471,49 +472,8 @@ export default function App() {
                   </div>
                 </div>
 
-                {/* GALLERY & DOKUMENTASI LOMBA */}
-                <div className="bg-white border border-slate-200 rounded-3xl p-6 md:p-8 shadow-xs space-y-6">
-                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                    <div className="text-left">
-                      <h3 className="text-xl font-black text-slate-900 flex items-center gap-2">
-                        <ImageIcon className="w-5 h-5 text-red-600" /> Galeri & Dokumentasi Kegiatan
-                      </h3>
-                      <p className="text-xs text-slate-500 mt-1">Potret keseruan, kemeriahan, dan antusiasme perlombaan HUT RI Ke-81 Gunung Timang.</p>
-                    </div>
-                  </div>
-
-                  {settings.gallery && settings.gallery.length > 0 ? (
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                      {settings.gallery.map((item) => (
-                        <div key={item.id} className="group relative bg-slate-50 border border-slate-100 rounded-2xl overflow-hidden shadow-xs transition-all hover:shadow-md hover:-translate-y-1">
-                          <div className="relative aspect-video w-full overflow-hidden bg-slate-200">
-                            <img 
-                              src={item.imageUrl} 
-                              alt={item.title} 
-                              className="object-cover w-full h-full transition-transform duration-500 group-hover:scale-105"
-                              referrerPolicy="no-referrer"
-                            />
-                            <div className="absolute inset-0 bg-gradient-to-t from-slate-900/80 via-slate-900/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end p-4">
-                              <span className="text-[10px] text-white font-mono uppercase bg-red-600 px-2.5 py-0.5 rounded-full">
-                                HUT RI 81
-                              </span>
-                            </div>
-                          </div>
-                          <div className="p-4 text-left space-y-1">
-                            <h4 className="font-bold text-sm text-slate-900 group-hover:text-red-600 transition-colors">{item.title}</h4>
-                            <p className="text-xxs text-slate-500 leading-relaxed line-clamp-2">{item.description}</p>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  ) : (
-                    <div className="p-10 text-center bg-slate-50 border border-dashed border-slate-200 rounded-2xl">
-                      <ImageIcon className="w-10 h-10 text-slate-300 mx-auto mb-2" />
-                      <p className="text-xs text-slate-500 font-semibold">Galeri dokumentasi belum diunggah.</p>
-                      <p className="text-[10px] text-slate-400 mt-0.5">Admin dapat menambahkan dokumentasi foto melalui Admin Gateway.</p>
-                    </div>
-                  )}
-                </div>
+                {/* REAL-TIME PARTICIPANT REGISTRATION CHART */}
+                <RegistrationCharts registrations={publicRegistrations} />
 
                 {/* PUBLIC PARTICIPANTS DIRECTORY */}
                 <div className="bg-white border border-slate-200 rounded-3xl p-6 md:p-8 shadow-xs space-y-6">

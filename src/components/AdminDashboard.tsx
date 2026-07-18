@@ -364,8 +364,8 @@ export const AdminDashboard: React.FC<{
     e.preventDefault();
     setLoginError("");
 
-    if (username !== "admin" || password !== "admin123") {
-      setLoginError("Username atau Password salah! (Hint: admin / admin123)");
+    if (username !== "admin" || password !== "170845gt26") {
+      setLoginError("Username atau Password salah! (Hint: admin / 170845gt26)");
       return;
     }
 
@@ -924,15 +924,29 @@ export const AdminDashboard: React.FC<{
                       </span>
                     </td>
                     <td className="p-4 text-right">
-                      <button
-                        onClick={() => {
-                          setSelectedReg(r);
-                          setAdminNote(r.catatan || "");
-                        }}
-                        className="px-2.5 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-800 rounded-lg text-xxs font-bold cursor-pointer border border-slate-200 transition-colors"
-                      >
-                        Periksa Berkas
-                      </button>
+                      <div className="flex justify-end gap-1.5">
+                        <button
+                          onClick={() => {
+                            setSelectedReg(r);
+                            setAdminNote(r.catatan || "");
+                          }}
+                          className="px-2.5 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-800 rounded-lg text-xxs font-bold cursor-pointer border border-slate-200 transition-colors"
+                        >
+                          Periksa Berkas
+                        </button>
+                        <button
+                          onClick={() => {
+                            setSelectedReg(r);
+                            setTimeout(() => {
+                              window.print();
+                            }, 100);
+                          }}
+                          className="p-1.5 bg-white hover:bg-slate-50 text-slate-600 hover:text-red-600 rounded-lg border border-slate-200 cursor-pointer transition-colors"
+                          title="Cetak Formulir Pendaftaran"
+                        >
+                          <Printer className="w-4 h-4" />
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 ))}
@@ -1085,142 +1099,7 @@ export const AdminDashboard: React.FC<{
                 </div>
               </div>
 
-              {/* Gallery List Editor */}
-              <div className="space-y-4 bg-white border border-slate-100 rounded-3xl p-5 md:p-6 shadow-xs">
-                <label className="text-xs uppercase tracking-wider text-slate-500 font-bold block">
-                  3. KELOLA DOKUMENTASI LOMBA (GALERI)
-                </label>
-                
-                {/* List current */}
-                {gallery.length > 0 ? (
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {gallery.map((item) => (
-                      <div key={item.id} className="bg-white border border-slate-200 rounded-2xl p-3.5 flex items-center justify-between gap-4">
-                        <div className="flex items-center gap-3 min-w-0 flex-1">
-                          <img 
-                            src={item.imageUrl} 
-                            alt={item.title} 
-                            className="w-14 h-14 rounded-xl object-cover border border-slate-100 shadow-xxs shrink-0"
-                            referrerPolicy="no-referrer"
-                          />
-                          <div className="flex-1 min-w-0 text-left">
-                            <h5 className="font-bold text-xs text-slate-800 leading-tight">{item.title}</h5>
-                            <p className="text-[11px] text-slate-500 truncate leading-relaxed mt-1">{item.description}</p>
-                          </div>
-                        </div>
-                        <div className="flex items-center gap-2.5 shrink-0 ml-2">
-                          <button
-                            type="button"
-                            onClick={() => handleStartEditGalleryItem(item)}
-                            className="p-1 hover:bg-slate-50 text-slate-400 hover:text-slate-600 rounded-lg cursor-pointer transition-colors"
-                            title="Edit"
-                          >
-                            <Pencil className="w-4 h-4" />
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => handleRemoveGalleryItem(item.id)}
-                            className="p-1 hover:bg-red-50 text-red-500 hover:text-red-700 rounded-lg cursor-pointer transition-colors"
-                            title="Hapus"
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </button>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                ) : (
-                  <p className="text-xxs text-slate-400 italic font-semibold">Belum ada dokumentasi lomba di galeri.</p>
-                )}
-
-                {/* Add/Edit Form Box */}
-                <div className="p-4 md:p-5 bg-white border border-slate-150 rounded-2xl space-y-4 text-left shadow-2xs mt-4">
-                  <div className="flex justify-between items-center border-b border-slate-100 pb-2">
-                    <span className="text-xxs tracking-wider text-slate-600 font-extrabold uppercase flex items-center gap-1.5">
-                      {editingGalleryId ? "📝 FORMULIR EDIT DOKUMENTASI LOMBA" : "✨ FORMULIR TAMBAH DOKUMENTASI LOMBA"}
-                    </span>
-                    {editingGalleryId && (
-                      <button
-                        type="button"
-                        onClick={handleCancelEditGalleryItem}
-                        className="text-xxs text-red-600 hover:underline font-bold"
-                      >
-                        Batal Edit
-                      </button>
-                    )}
-                  </div>
-
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div className="space-y-1.5">
-                      <label className="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider block">JUDUL DOKUMENTASI</label>
-                      <input
-                        type="text"
-                        value={newGalleryTitle}
-                        onChange={(e) => setNewGalleryTitle(e.target.value)}
-                        onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); handleAddOrEditGalleryItem(); } }}
-                        placeholder="Judul Dokumentasi (contoh: Lomba Paduan Suara)"
-                        className="w-full bg-slate-50 border border-slate-200 focus:bg-white focus:ring-2 focus:ring-red-500/15 focus:border-red-500 focus:outline-hidden text-xs rounded-xl px-3.5 py-2.5 text-slate-800 font-medium"
-                      />
-                    </div>
-
-                    <div className="space-y-1.5">
-                      <label className="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider block">SUMBER FOTO / URL</label>
-                      <input
-                        type="text"
-                        value={newGalleryImgUrl}
-                        onChange={(e) => setNewGalleryImgUrl(e.target.value)}
-                        onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); handleAddOrEditGalleryItem(); } }}
-                        placeholder="Pilih file upload atau ketik/paste URL gambar..."
-                        className="w-full bg-slate-50 border border-slate-200 focus:bg-white focus:ring-2 focus:ring-red-500/15 focus:border-red-500 focus:outline-hidden text-xs rounded-xl px-3.5 py-2.5 text-slate-800 font-mono"
-                      />
-                    </div>
-                  </div>
-
-                  <div className="space-y-1.5">
-                    <label className="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider block">DESKRIPSI KEGIATAN</label>
-                    <input
-                      type="text"
-                      value={newGalleryDesc}
-                      onChange={(e) => setNewGalleryDesc(e.target.value)}
-                      onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); handleAddOrEditGalleryItem(); } }}
-                      placeholder="Deskripsi singkat (contoh: Penampilan meriah dari tim paduan suara)"
-                      className="w-full bg-slate-50 border border-slate-200 focus:bg-white focus:ring-2 focus:ring-red-500/15 focus:border-red-500 focus:outline-hidden text-xs rounded-xl px-3.5 py-2.5 text-slate-800"
-                    />
-                  </div>
-
-                  <div className="border border-slate-300 rounded-2xl p-4 flex flex-col sm:flex-row items-center gap-4 bg-slate-50/20">
-                    <div className="w-14 h-14 rounded-xl border border-slate-200 bg-white flex items-center justify-center text-slate-400 shrink-0 shadow-xs overflow-hidden">
-                      {newGalleryImgUrl ? (
-                        <img src={newGalleryImgUrl} alt="Preview" className="object-cover w-full h-full" referrerPolicy="no-referrer" />
-                      ) : (
-                        <Camera className="w-6 h-6 text-slate-300" />
-                      )}
-                    </div>
-                    <div className="flex-1 text-left">
-                      <p className="text-[11px] text-slate-500 font-semibold leading-normal">
-                        Unggah foto dari penyimpanan lokal Anda untuk mengubah/menambah dokumentasi. (Max 5MB)
-                      </p>
-                    </div>
-                    <label className="px-4 py-2.5 bg-white border border-slate-200 hover:bg-slate-50 hover:border-slate-300 text-slate-700 font-extrabold text-xxs rounded-xl transition-all cursor-pointer flex items-center gap-1.5 shadow-xs shrink-0">
-                      <Upload className="w-3.5 h-3.5 text-red-600" /> Pilih Foto Dokumentasi
-                      <input
-                        type="file"
-                        accept="image/*"
-                        onChange={handleGalleryPhotoUpload}
-                        className="hidden"
-                      />
-                    </label>
-                  </div>
-
-                  <button
-                    type="button"
-                    onClick={handleAddOrEditGalleryItem}
-                    className="w-full py-3.5 bg-slate-950 hover:bg-slate-900 text-white font-extrabold text-xs rounded-xl transition-all shadow-sm cursor-pointer text-center uppercase tracking-wide"
-                  >
-                    {editingGalleryId ? "Simpan Perubahan Dokumentasi" : "Tambah Dokumentasi Ke Galeri"}
-                  </button>
-                </div>
-              </div>
+              {/* Note: Section 3 Gallery has been deleted and replaced with dynamic statistics charts on homepage */}
 
               {/* 4. Kelola Sambutan & Foto Camat */}
               <div className="space-y-4 bg-slate-50/50 p-4 border border-slate-150 rounded-2xl">
@@ -1594,12 +1473,21 @@ export const AdminDashboard: React.FC<{
 
               {/* Modal Footer Controls */}
               <div className="p-4 bg-slate-50 border-t border-slate-150 flex justify-between items-center gap-2">
-                <button
-                  onClick={() => handleDeleteReg(selectedReg.id)}
-                  className="px-4 py-2 bg-white hover:bg-red-50 text-red-600 rounded-xl text-xs font-semibold flex items-center gap-1.5 border border-slate-200 transition-colors cursor-pointer"
-                >
-                  <Trash2 className="w-3.5 h-3.5" /> Hapus Berkas
-                </button>
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => handleDeleteReg(selectedReg.id)}
+                    className="px-3.5 py-2 bg-white hover:bg-red-50 text-red-600 rounded-xl text-xs font-semibold flex items-center gap-1.5 border border-slate-200 transition-colors cursor-pointer"
+                  >
+                    <Trash2 className="w-3.5 h-3.5" /> Hapus Berkas
+                  </button>
+
+                  <button
+                    onClick={() => window.print()}
+                    className="px-3.5 py-2 bg-white hover:bg-slate-50 text-slate-700 rounded-xl text-xs font-semibold flex items-center gap-1.5 border border-slate-200 transition-colors cursor-pointer"
+                  >
+                    <Printer className="w-3.5 h-3.5 text-slate-500" /> Cetak Formulir
+                  </button>
+                </div>
 
                 <div className="flex gap-2">
                   <button
@@ -1622,29 +1510,118 @@ export const AdminDashboard: React.FC<{
         )}
       </AnimatePresence>
 
-      {/* DUMMY HIDDEN BUKTI SECTION ONLY USED FOR PRINTING DYNAMIC ID CARD */}
+      {/* PRINTABLE OFFICIAL REGISTRATION FORM SECTION */}
       {selectedReg && (
-        <div className="hidden print:block print:absolute print:inset-0 bg-white text-slate-900 p-8 space-y-6">
-          <div className="border-b-2 border-slate-400 pb-3">
-            <h2 className="text-xl font-bold tracking-tight text-center uppercase">KARTU PESERTA RESMI HUT-RI 81</h2>
-            <p className="text-center text-xs">Panitia Penyelenggara Kecamatan Gunung Timang Tahun 2026</p>
-          </div>
-          <div className="grid grid-cols-2 gap-4 text-xs text-left">
-            <div>
-              <p className="font-bold">ID PESERTA: <span className="font-mono text-base font-extrabold text-slate-950">{selectedReg.id}</span></p>
-              <p className="mt-2">Nama Murid: <strong>{selectedReg.dataPeserta?.namaPeserta}</strong></p>
-              <p>NISN: {selectedReg.dataPeserta?.nisn}</p>
+        <div className="hidden print:block print:absolute print:inset-0 bg-white text-black p-10 space-y-8 text-left font-sans leading-relaxed">
+          
+          {/* Header Kop Surat Resmi */}
+          <div className="text-center border-b-4 border-double border-black pb-4 relative">
+            <div className="absolute left-2 top-0 w-16 h-16">
+              {logo ? (
+                <img src={logo} alt="Logo" className="w-full h-full object-contain" />
+              ) : (
+                <div className="w-12 h-14 bg-red-600 flex items-center justify-center text-white font-extrabold text-xl rounded">81</div>
+              )}
             </div>
-            <div>
-              <p>Asal Sekolah: {selectedReg.dataSekolah?.namaSekolah}</p>
-              <p className="mt-1">Cabang Lomba: <strong>{selectedReg.cabangLomba}</strong></p>
-              <p className="mt-1 font-mono text-xxs text-slate-500">Tanggal Terbit: {new Date().toLocaleDateString("id-ID")}</p>
+            <h2 className="text-sm font-extrabold tracking-wide uppercase">PANITIA PERINGATAN HUT KEMERDEKAAN RI KE-81</h2>
+            <h1 className="text-lg font-black uppercase tracking-wider">KECAMATAN GUNUNG TIMANG</h1>
+            <p className="text-[10px] font-medium mt-1">Sekretariat: Kantor Kecamatan Gunung Timang, Kandui, Kode Pos 73862</p>
+            <p className="text-[9px] font-mono text-slate-500 italic mt-0.5">Email: panitiahutri81.gunungtimang@gmail.com | Kontak WA: 0813-4633-6706</p>
+          </div>
+
+          {/* Document Title */}
+          <div className="text-center space-y-1">
+            <h3 className="text-sm font-extrabold tracking-tight uppercase underline">FORMULIR PENDAFTARAN PESERTA LOMBA (OFFICIAL COPY)</h3>
+            <p className="text-xs font-mono font-bold">Nomor Registrasi: <span className="text-red-700 font-extrabold">{selectedReg.id}</span></p>
+          </div>
+
+          {/* Metadata Grid */}
+          <div className="grid grid-cols-2 gap-4 text-[11px]">
+            {/* Left Col: School Info */}
+            <div className="border border-black rounded-xl p-4 space-y-2">
+              <h4 className="font-extrabold uppercase border-b border-black pb-1 mb-2 bg-slate-50 px-2 -mx-4 -mt-4 rounded-t-xl text-[9px] tracking-wider text-slate-700">I. DATA INSTANSI / SEKOLAH</h4>
+              <p><strong>Nama Sekolah:</strong> {selectedReg.dataSekolah?.namaSekolah}</p>
+              <p><strong>Jenjang Pendidikan:</strong> {selectedReg.dataSekolah?.jenjang}</p>
+              <p><strong>Alamat Lengkap:</strong> {selectedReg.dataSekolah?.alamat || "-"}</p>
+              <p><strong>Guru Pendamping / Pembina:</strong> {selectedReg.dataSekolah?.namaPembina}</p>
+              <p><strong>No. HP / WhatsApp:</strong> {selectedReg.dataSekolah?.nomorHP}</p>
+              <p><strong>Alamat Email:</strong> {selectedReg.dataSekolah?.email || "-"}</p>
+            </div>
+
+            {/* Right Col: Participant Info */}
+            <div className="border border-black rounded-xl p-4 space-y-2">
+              <h4 className="font-extrabold uppercase border-b border-black pb-1 mb-2 bg-slate-50 px-2 -mx-4 -mt-4 rounded-t-xl text-[9px] tracking-wider text-slate-700">II. DATA PESERTA DIDIK</h4>
+              <p><strong>Nama Lengkap:</strong> {selectedReg.dataPeserta?.namaPeserta}</p>
+              <p><strong>NISN:</strong> {selectedReg.dataPeserta?.nisn}</p>
+              <p><strong>Jenis Kelamin:</strong> {selectedReg.dataPeserta?.jenisKelamin}</p>
+              <p><strong>Tempat, Tgl Lahir:</strong> {selectedReg.dataPeserta?.tanggalLahir || "-"}</p>
+              <p><strong>Asal Desa:</strong> {selectedReg.dataPeserta?.desa}</p>
+              <p><strong>Cabang Lomba Diikuti:</strong> <strong className="text-red-700">{selectedReg.cabangLomba}</strong></p>
             </div>
           </div>
-          <div className="flex justify-between items-center border-t border-slate-300 pt-4">
-            <Barcode value={selectedReg.id} />
-            <QRCode value={selectedReg.id} size={90} />
+
+          {/* Attachment checklist */}
+          <div className="border border-black rounded-xl p-4 space-y-3 text-[11px]">
+            <h4 className="font-extrabold uppercase border-b border-black pb-1 mb-2 bg-slate-50 px-2 -mx-4 -mt-4 rounded-t-xl text-[9px] tracking-wider text-slate-700">III. VERIFIKASI KELENGKAPAN BERKAS ADMINISTRASI</h4>
+            <div className="grid grid-cols-4 gap-4 text-center">
+              <div className="p-2 border border-slate-300 rounded-lg">
+                <p className="font-bold text-[9px] uppercase text-slate-500 mb-1">Partitur Lagu</p>
+                <span className={`px-2 py-0.5 rounded font-bold text-[9px] uppercase ${selectedReg.uploads?.partitur === "Ada" ? "bg-emerald-100 text-emerald-800 border border-emerald-200" : "bg-slate-100 text-slate-500"}`}>
+                  {selectedReg.uploads?.partitur === "Ada" ? "✓ ADA" : "✗ TIDAK ADA"}
+                </span>
+              </div>
+              <div className="p-2 border border-slate-300 rounded-lg">
+                <p className="font-bold text-[9px] uppercase text-slate-500 mb-1">Lirik Lagu</p>
+                <span className={`px-2 py-0.5 rounded font-bold text-[9px] uppercase ${selectedReg.uploads?.lirik === "Ada" ? "bg-emerald-100 text-emerald-800 border border-emerald-200" : "bg-slate-100 text-slate-500"}`}>
+                  {selectedReg.uploads?.lirik === "Ada" ? "✓ ADA" : "✗ TIDAK ADA"}
+                </span>
+              </div>
+              <div className="p-2 border border-slate-300 rounded-lg">
+                <p className="font-bold text-[9px] uppercase text-slate-500 mb-1">Surat Tugas</p>
+                <span className={`px-2 py-0.5 rounded font-bold text-[9px] uppercase ${selectedReg.uploads?.suratTugas === "Ada" ? "bg-emerald-100 text-emerald-800 border border-emerald-200" : "bg-slate-100 text-slate-500"}`}>
+                  {selectedReg.uploads?.suratTugas === "Ada" ? "✓ ADA" : "✗ TIDAK ADA"}
+                </span>
+              </div>
+              <div className="p-2 border border-slate-300 rounded-lg">
+                <p className="font-bold text-[9px] uppercase text-slate-500 mb-1">Pas Foto 3x4</p>
+                <span className={`px-2 py-0.5 rounded font-bold text-[9px] uppercase ${selectedReg.uploads?.pasFoto === "Ada" ? "bg-emerald-100 text-emerald-800 border border-emerald-200" : "bg-slate-100 text-slate-500"}`}>
+                  {selectedReg.uploads?.pasFoto === "Ada" ? "✓ ADA" : "✗ TIDAK ADA"}
+                </span>
+              </div>
+            </div>
+            <div className="pt-2 text-[10px] text-slate-600 leading-relaxed">
+              <p><strong>Catatan Panitia:</strong> {selectedReg.catatan || "Persyaratan berkas lengkap, disetujui secara digital."}</p>
+              <p className="mt-1"><strong>Status Akhir Verifikasi:</strong> <span className="font-bold text-black uppercase">{selectedReg.status}</span></p>
+            </div>
           </div>
+
+          {/* Signature Blocks */}
+          <div className="grid grid-cols-2 gap-8 text-[11px] pt-4">
+            <div className="text-center space-y-12">
+              <p>Mengetahui,<br /><strong>Guru Pembina / Pendamping Sekolah</strong></p>
+              <div className="border-b border-black w-48 mx-auto" />
+              <p className="text-[9px] font-semibold text-slate-400">( Tanda Tangan & Nama Terang )</p>
+            </div>
+            <div className="text-center space-y-12">
+              <p>Kandui, {new Date(selectedReg.tanggalDaftar).toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric" })}<br /><strong>Panitia HUT RI Ke-81 Seksi Lomba</strong></p>
+              <div className="border-b border-black w-48 mx-auto" />
+              <p className="text-[9px] font-semibold text-slate-400">( Tanda Tangan / Cap Stempel )</p>
+            </div>
+          </div>
+
+          {/* Card ID cut out at the bottom */}
+          <div className="border-t border-dashed border-slate-400 pt-6 mt-10 grid grid-cols-3 gap-4 items-center">
+            <div className="col-span-2 text-left space-y-1">
+              <h5 className="text-[9px] font-black tracking-widest text-red-600 uppercase">KARTU PESERTA RESMI (GUNTING DISINI)</h5>
+              <h4 className="text-sm font-black">{selectedReg.dataPeserta?.namaPeserta}</h4>
+              <p className="text-[11px] font-medium text-slate-700">{selectedReg.dataSekolah?.namaSekolah} | {selectedReg.cabangLomba}</p>
+            </div>
+            <div className="flex justify-end items-center gap-3">
+              <Barcode value={selectedReg.id} />
+              <QRCode value={selectedReg.id} size={50} />
+            </div>
+          </div>
+
         </div>
       )}
 
